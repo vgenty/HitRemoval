@@ -18,7 +18,7 @@ print a
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-2):
+for x in xrange(len(sys.argv)-1):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
@@ -26,19 +26,23 @@ for x in xrange(len(sys.argv)-2):
 my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify analysis output root file name
-my_proc.set_ana_output_file("hitremoval_ana.root");
+#my_proc.set_ana_output_file("hitremoval_ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file(sys.argv[-1])
+my_proc.set_output_file("hitremoval.root")
 
 # prepare the various hit removal stages
 
 _hitproducer    = "gaushit"
 _clusproducer   = "pandoraCosmic"
-_vtxproducer    = "mcvertex"
+_vtxproducer    = "numuCC_vertex"
 _clusproducer01 = "clus01"
 _clusproducer02 = "clus02"
 _clusproducer03 = "clus03"
+
+#muon removal
+_trkproducer    = "pandoraNu"
+_hitassproducer = "pandoraCosmicKHitRemoval"
 
 def hitremoval00():
 
@@ -99,14 +103,24 @@ def hitremoval03():
 
     return algo
 
+def hitremoval04():
+
+    algo = fmwk.RemoveMuonHits()
+    algo.setTrkProducer(_trkproducer)
+    algo.setHitAssProducer(_hitassproducer)
+    algo.setVtxProducer(_vtxproducer)
+
+    return algo 
+
 my_proc.add_process( hitremoval00() )
 my_proc.add_process( hitremoval01() )
 my_proc.add_process( hitremoval02() )
 #my_proc.add_process( hitremoval03() )
+#my_proc.add_process( hitremoval04() )
 
-my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
-my_proc.set_data_to_write(fmwk.data.kMCTrack,  "mcreco"     )
-my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
+#my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
+#my_proc.set_data_to_write(fmwk.data.kMCTrack,  "mcreco"     )
+#my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
 my_proc.set_data_to_write(fmwk.data.kVertex,   _vtxproducer )
 
 my_proc.set_data_to_write(fmwk.data.kHit,         _hitproducer    )
