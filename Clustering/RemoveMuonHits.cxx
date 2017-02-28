@@ -4,12 +4,8 @@
 #include "RemoveMuonHits.h"
 #include "DataFormat/hit.h"
 #include "DataFormat/vertex.h"
-#include "DataFormat/mctruth.h"
 #include "DataFormat/event_ass.h"
 #include "DataFormat/track.h"
-#include "LArUtil/GeometryHelper.h"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
 #include <math.h>
 
 namespace larlite {
@@ -95,7 +91,7 @@ namespace larlite {
       auto h_i = ass_hit_v.at(trk_map.begin()->second).at(i) ;
       auto h_ass = ev_hit_cosRem->at(h_i);
 
-       if( h_ass.GoodnessOfFit() < 0 || h_ass.WireID().Plane != 2 ) continue;
+      //if( h_ass.GoodnessOfFit() < 0 || h_ass.WireID().Plane != 2 ) continue;
 
        h_ass.set_goodness(-1) ;
 
