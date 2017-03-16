@@ -1,7 +1,7 @@
-#ifndef LARLITE_LINEARCLUSTERSUBSETREMOVAL_CXX
-#define LARLITE_LINEARCLUSTERSUBSETREMOVAL_CXX
+#ifndef LARLITE_COSMICREMOVAL_CXX
+#define LARLITE_COSMICREMOVAL_CXX
 
-#include "LinearClusterSubsetRemoval.h"
+#include "CosmicRemoval.h"
 #include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/cluster.h"
@@ -9,11 +9,11 @@
 
 namespace larlite {
 
-  LinearClusterSubsetRemoval::LinearClusterSubsetRemoval()
+  CosmicRemoval::CosmicRemoval()
     : _tree(nullptr)
   {
 
-    _name        = "LinearClusterSubsetRemoval";
+    _name        = "CosmicRemoval";
     _fout        = 0;
     _verbose     = false;
     _clusterProducer = "";
@@ -27,12 +27,13 @@ namespace larlite {
 
   }
 
-  bool LinearClusterSubsetRemoval::initialize() {
+  bool CosmicRemoval::initialize() {
 
     if (_tree) delete _tree;
     _tree = new TTree("linearclusterremoval","Linear Cluster Removal TTree");
     _tree->Branch("_nhits",&_nhits,"nhits/I");
     _tree->Branch("_lin",  &_lin  ,"lin/D"  );
+    _tree->Branch("_angle",  &_angle  ,"angle/D"  );
     _tree->Branch("_local_lin_truncated",  &_local_lin_truncated  ,"local_lin_truncated/D"  );
     _tree->Branch("_local_lin_avg",  &_local_lin_avg  ,"local_lin_avg/D"  );
 
@@ -68,7 +69,7 @@ namespace larlite {
     return true;
   }
   
-  bool LinearClusterSubsetRemoval::analyze(storage_manager* storage) {
+  bool CosmicRemoval::analyze(storage_manager* storage) {
 
     auto ev_clus = storage->get_data<event_cluster>( _clusterProducer );
     auto evt_vtx = storage->get_data<event_vertex> ( _vtxProducer     );
@@ -120,13 +121,16 @@ namespace larlite {
       }
 
       int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
-      
+
       // get coordinates of hits to calculate linearity
       std::vector<double> hit_w_v;
       std::vector<double> hit_t_v;
 
       // minimum distance to vtx
+      // and coordinates for closest point
       double dmin = 1000.;
+      double wmin = 0;
+      double tmin = 0;
       
       for (auto const& hit_idx : hit_idx_v){
 	double w = ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
@@ -134,9 +138,13 @@ namespace larlite {
 	hit_w_v.push_back( w );
 	hit_t_v.push_back( t );
 	double d = ( w - _vtx_w_cm[pl] ) * ( w - _vtx_w_cm[pl] ) + ( t - _vtx_t_cm[pl] ) * ( t - _vtx_t_cm[pl] );
-	if (d < dmin) dmin = d;
+	if (d < dmin) { dmin = d; wmin = w; tmin = t; }
       }
+
       dmin = sqrt(dmin);
+
+      if (_verbose)
+	std::cout << "Pl : " << pl << "\t NHits : " << hit_w_v.size() << std::endl;
       
       twodimtools::Linearity lin(hit_w_v,hit_t_v);
 
@@ -160,9 +168,21 @@ namespace larlite {
       double y0 = _vtx_t_cm[pl];
       double IP = fabs( - slope * x0 + y0 - intercept ) / sqrt( slope * slope + 1 );
 
+      // slope of vertex to minimum point
+      double slopeminpt = (_vtx_t_cm[pl] - tmin) / (_vtx_w_cm[pl] - wmin);
+      double tanangle = (slopeminpt - slope) / (1 + slopeminpt * slope);
+      _angle = fabs( atan(tanangle) * 180 / 3.14 );
+
+      if (_verbose)
+	std::cout << "\t Linearity : " << _local_lin_truncated
+		  << "\t IP : " << IP
+		  << "\t DMIN : " << dmin
+		  << "\t angle : " << _angle
+		  << std::endl << std::endl;
+
       _tree->Fill();
 
-      if (_local_lin_truncated < max_lin and !( (dmin > 9.0) and (IP < 3.0) ) )
+      if (_local_lin_truncated < max_lin and ( _angle > 20. ) )
 	remove = true;
 
       if ( (IP > 20) and (_nhits > 20) and (_local_lin_truncated < 0.3) )
@@ -178,7 +198,7 @@ namespace larlite {
     return true;
   }
 
-  bool LinearClusterSubsetRemoval::finalize() {
+  bool CosmicRemoval::finalize() {
 
     if (_fout){
       _fout->cd();

@@ -1,9 +1,9 @@
 /**
- * \file LinearClusterSubsetRemoval.h
+ * \file CosmicRemoval.h
  *
  * \ingroup Clusterer
  * 
- * \brief Class def header for a class LinearClusterSubsetRemoval
+ * \brief Class def header for a class CosmicRemoval
  *
  * @author david caratelli
  */
@@ -12,8 +12,8 @@
 
     @{*/
 
-#ifndef LARLITE_LINEARCLUSTERSUBSETREMOVAL_H
-#define LARLITE_LINEARCLUSTERSUBSETREMOVAL_H
+#ifndef LARLITE_COSMICREMOVAL_H
+#define LARLITE_COSMICREMOVAL_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
@@ -24,30 +24,30 @@
 
 namespace larlite {
   /**
-     \class LinearClusterSubsetRemoval
+     \class CosmicRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class LinearClusterSubsetRemoval : public ana_base{
+  class CosmicRemoval : public ana_base{
   
   public:
 
     /// Default constructor
-    LinearClusterSubsetRemoval();
+    CosmicRemoval();
 
     /// Default destructor
-    virtual ~LinearClusterSubsetRemoval(){}
+    virtual ~CosmicRemoval(){}
 
-    /** IMPLEMENT in LinearClusterSubsetRemoval.cc!
+    /** IMPLEMENT in CosmicRemoval.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in LinearClusterSubsetRemoval.cc! 
+    /** IMPLEMENT in CosmicRemoval.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in LinearClusterSubsetRemoval.cc! 
+    /** IMPLEMENT in CosmicRemoval.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -90,6 +90,7 @@ namespace larlite {
     TTree* _tree;
     int _nhits;
     double _lin;
+    double _angle;
     double _local_lin_truncated;
     double _local_lin_avg;
     
