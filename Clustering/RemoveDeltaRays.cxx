@@ -16,6 +16,8 @@ namespace larlite {
     _verbose     = false;
     _clusProducer = "";
     _vtxProducer  = "";
+
+    _d_delta_min = _d_delta_max = 0.;
     
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
@@ -35,13 +37,16 @@ namespace larlite {
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
 
-    larlite::event_hit* ev_hit = nullptr;
-    auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
+    _ev_hit = nullptr;
+    auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), _ev_hit, ev_clus->name());
 
-    if (!ev_hit){
+    if (!_ev_hit){
       std::cout << "No hits!" << std::endl;
       return false;
     }
+
+    // keep track of all clusters identified as delta-rays
+    std::vector<size_t> delta_ray_v;
     
     // get vertex position on each plane
     if ( (ev_vtx->size() == 1) ){
@@ -55,145 +60,134 @@ namespace larlite {
       }
     }
 
-    // loop trhough each cluster
-    // find the "start" and "end" point of the cluster
-    // if both outside of the ROI
-    // remove
-    // if above some thresdhold, remove cluster
+    // loop through clusters and identify those removed
+    // by cosmic removal, per plane
+    std::vector< std::vector<size_t> > cosmic_clus_v(3,std::vector<size_t>());
 
-    for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
-
-      // store output cluster hit indices
-      std::vector<unsigned int> out_cluster_hit_idx_v;
-      larlite::cluster out_clus;
+    for (size_t i=0; i < ass_cluster_hit_v.size(); i++) {
 
       auto hit_idx_v = ass_cluster_hit_v[i];
-
-      bool remove = false;
-
-      int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
-
-      //if ( (pl !=1) || (hit_idx_v.size() != 48) ) continue;
-
-      //std::cout << "Plane : " << pl << "\t N hits : " << hit_idx_v.size() << std::endl;
-      //std::cout << "Vtx @ " << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << std::endl;
       
-      // get coordinates of hits to calculate linearity
-      std::vector<double> hit_w_v;
-      std::vector<double> hit_t_v;
+      int pl = _ev_hit->at(hit_idx_v[0]).WireID().Plane;
+
+      // tmp
+      //if ( (pl != 1) || (hit_idx_v.size() != 358) ) continue;
+
+      if (hit_idx_v.size() == 0) continue;
+
+      // if negative GoF -> removed.
+      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 )
+	cosmic_clus_v[pl].push_back( i );
+
+    }// for all clusters
+
+    // now for small clusters that have not been removed
+    // identify if they are close to a removed cosmic
+    // cluster and delta-ray like
+
+    for (size_t i=0; i < ass_cluster_hit_v.size(); i++) {
       
-      // minimum distance to vtx
-      // and coordinates for closest point
-      double dmin = 1000000.;
-      double wmin = 0;
-      double tmin = 0;
+      auto hit_idx_v = ass_cluster_hit_v[i];
+
+      int pl = _ev_hit->at(hit_idx_v[0]).WireID().Plane;
+
+      if (hit_idx_v.size() == 0) continue;
+
+      // if negative GoF -> removed, ignore
+      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) continue;
+
+      // if too many hits -> remove
+      if (hit_idx_v.size() > 20) continue;
       
-      for (auto const& hit_idx : hit_idx_v){
-	double w = ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
-	double t = ev_hit->at(hit_idx).PeakTime() * _time2cm;
-	hit_w_v.push_back( w );
-	hit_t_v.push_back( t );
-	double d = ( w - _vtx_w_cm[pl] ) * ( w - _vtx_w_cm[pl] ) + ( t - _vtx_t_cm[pl] ) * ( t - _vtx_t_cm[pl] );
-	if (d < dmin) { dmin = d; wmin = w; tmin = t; }
-      }
-
-      dmin = sqrt(dmin);
-
-      if (dmin > _roi_radius) remove = true;
-      else {
-	
-	twodimtools::Linearity lin(hit_w_v,hit_t_v);
-	
-	// choose point on line from linearity fit
-	double ptx = 1e4;
-	double pty = ptx * lin._slope + lin._intercept;
-	
-	// find closest and furthest point in cluster to this point
-	size_t pt_close_idx = -1;
-	double d_close = 1000000.;
-	size_t pt_far_idx = -1;
-	double d_far = 0.;
-	
-	for (size_t j=0; j < hit_w_v.size(); j++) {
-	  double xx = hit_w_v[j];
-	  double yy = hit_t_v[j];
-	  double dd = sqrt((xx-ptx)*(xx-ptx) + (yy-pty)*(yy-pty));
-	  if (dd > d_far)   { d_far   = dd; pt_far_idx   = j; }
-	  if (dd < d_close) { d_close = dd; pt_close_idx = j; }
-	}
-
-	if ( (pt_close_idx < 0) || (pt_far_idx < 0) ) continue;
-
-	//std::cout << "compare point " << ptx << ", " << pty << std::endl;
-	//std::cout << "\t\t near "    << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
-	//std::cout << "\t\t far  "    << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
-
-	// are near and far points outside of ROI?
-	
-	d_close = sqrt( (_vtx_w_cm[pl] - hit_w_v[pt_close_idx]) * (_vtx_w_cm[pl] - hit_w_v[pt_close_idx]) +
-			(_vtx_t_cm[pl] - hit_t_v[pt_close_idx]) * (_vtx_t_cm[pl] - hit_t_v[pt_close_idx]) );
-	
-	d_far = sqrt( (_vtx_w_cm[pl] - hit_w_v[pt_far_idx]) * (_vtx_w_cm[pl] - hit_w_v[pt_far_idx]) +
-		      (_vtx_t_cm[pl] - hit_t_v[pt_far_idx]) * (_vtx_t_cm[pl] - hit_t_v[pt_far_idx]) );
-
-	double l_track = sqrt( pow(hit_w_v[pt_far_idx] - hit_w_v[pt_close_idx], 2) +
-			       pow(hit_t_v[pt_far_idx] - hit_t_v[pt_close_idx], 2) );
-
-	//std::cout << "from vtx, near : " << d_close << ", " << "\t far : " << d_far << std::endl;
-	
-	if ( (d_close > _roi_radius) && (d_far > _roi_radius) )
-	  remove = true;
-
-	
-	// impact parameter to vertex:
-	double x0 = _vtx_w_cm[pl];
-	double y0 = _vtx_t_cm[pl];
-	double IP = fabs( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
-
-	// max IP allowed, but one end of the track must be outside of ROI
-	if ( (IP > 30.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) ) remove = true;
-
-	// construct triangle OAB with O = vertex, A & B the two ends of the cluster
-	// angle AOB is the angle on which to cut. If large cluster uncorrelated
-	// with vertex.
-	//std::cout << "O =  [" << x0 << ", " << y0 << std::endl;
-	//std::cout << "A =  [" << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
-	//std::cout << "B =  [" << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
-	double OAx = hit_w_v[pt_close_idx] - x0;
-	double OAy = hit_t_v[pt_close_idx] - y0;
-	double OAm = sqrt(OAx*OAx + OAy*OAy); // magnitude
-	double OBx = hit_w_v[pt_far_idx]   - x0;
-	double OBy = hit_t_v[pt_far_idx]   - y0;
-	double OBm = sqrt(OBx*OBx + OBy*OBy); // magnitude
-	double cos = (OAy*OBy + OAx*OBx) / (OAm * OBm);
-	//std::cout << "dot product is " << cos << std::endl;
-	double angle = 180. * acos(cos) / 3.14;
-	//std::cout << "angle is " << angle << std::endl;
-	
-	if ( (angle > 50) && (dmin > 4.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
-	  remove = true;
-
-	if ( (l_track > _roi_radius) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
-	  remove = true;
-	
-      }
-      
-      if (remove){
-	for (auto const& hit_idx : hit_idx_v)
-	  ev_hit->at(hit_idx).set_goodness(-1.0);
+      // compare this delta-ray to all removed muons in the plane
+      for (auto const& muidx : cosmic_clus_v[pl]){
+	if (DeltaRay( ass_cluster_hit_v[muidx], hit_idx_v ) == true )
+	delta_ray_v.push_back( i );
       }
       
     }// for all clusters
 
-  
+    for (auto const& delta_ray : delta_ray_v){
+      auto hit_idx_v = ass_cluster_hit_v[delta_ray];
+      for (auto const& hit_idx : hit_idx_v){
+	//std::cout << "removing hit @ " << _ev_hit->at(hit_idx).PeakTime() * _time2cm << ", " << _ev_hit->at(hit_idx).WireID().Wire * _wire2cm << "]" << std::endl;
+	_ev_hit->at(hit_idx).set_goodness(-1.0);
+      }
+    }// for all delta-rays
+      
     return true;
   }
 
   bool RemoveDeltaRays::finalize() {
 
-  
     return true;
   }
+
+  
+  bool RemoveDeltaRays::DeltaRay(const std::vector<unsigned int>& muon,
+				 const std::vector<unsigned int>& deltaray) {
+
+    // min dist to muon
+    // idx of muon hit with min dist
+    double ddmin = 1000000.;
+    size_t hidxmin;
+    // max distance to muon
+    double ddmax = 0.0;
+
+    //std::cout << muon.size() << " muon hits" << std::endl;
+    //std::cout << deltaray.size() << " delta-ray hits" << std::endl;
+    //std::cout << "delta-ray @ [" << _ev_hit->at(deltaray[0]).PeakTime() * _time2cm << ", " << _ev_hit->at(deltaray[0]).WireID().Wire * _wire2cm << "]" << std::endl;
+    
+    // find minimum distance between delta-ray candidate and cosmic muon
+    for (auto mu_h_idx : muon) {
+      for (auto dr_h_idx : deltaray) {
+
+	auto mu_h = _ev_hit->at(mu_h_idx);
+	auto dr_h = _ev_hit->at(dr_h_idx);
+
+	double dd = _distSq_(mu_h,dr_h);
+
+	//std::cout << "\t dist = " << dd << std::endl;
+
+	if (dd < ddmin) { ddmin = dd; hidxmin = mu_h_idx; }
+      }
+    }
+
+    //std::cout << "ddmin is " << ddmin << std::endl;
+
+    if (  sqrt(ddmin) > _d_delta_min ) return false;
+
+    // find max distance to this point
+    auto const& mu_h_min = _ev_hit->at(hidxmin);
+    
+    for (auto const& dr_h_idx : deltaray) {
+      
+      auto const& dr_h = _ev_hit->at(dr_h_idx);
+      
+      double dd = _distSq_(dr_h, mu_h_min);
+
+      if (dd > ddmax) { ddmax = dd; }
+
+    }// for all delta-ray hits
+
+    if ( sqrt(ddmax) > _d_delta_max ) return false;
+
+    //std::cout << "dmin = " << (int)(10.*sqrt(ddmin)) << ", dmax = " << (int)(10.*sqrt(ddmax)) << " mm" << std::endl;
+	
+    return true;
+  }
+
+
+  double RemoveDeltaRays::_distSq_(const larlite::hit& h1, const larlite::hit& h2) {
+
+    double t1 = h1.PeakTime() * _time2cm;
+    double w1 = h1.WireID().Wire * _wire2cm;
+    double t2 = h2.PeakTime() * _time2cm;
+    double w2 = h2.WireID().Wire * _wire2cm;
+    
+    return (t1-t2)*(t1-t2) + (w1-w2)*(w1-w2);
+  }
+      
 
 }
 #endif

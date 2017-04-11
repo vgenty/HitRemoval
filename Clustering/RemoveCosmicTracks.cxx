@@ -73,10 +73,12 @@ namespace larlite {
 
       int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
 
-      //if ( (pl !=1) || (hit_idx_v.size() != 48) ) continue;
+      //if ( (pl !=2) || (hit_idx_v.size() != 79) ) continue;
 
-      //std::cout << "Plane : " << pl << "\t N hits : " << hit_idx_v.size() << std::endl;
-      //std::cout << "Vtx @ " << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << std::endl;
+      if (_verbose){
+	std::cout << "Plane : " << pl << "\t N hits : " << hit_idx_v.size() << std::endl;
+	std::cout << "Vtx @ " << _vtx_w_cm[pl] << ", " << _vtx_t_cm[pl] << std::endl;
+      }
       
       // get coordinates of hits to calculate linearity
       std::vector<double> hit_w_v;
@@ -98,6 +100,8 @@ namespace larlite {
       }
 
       dmin = sqrt(dmin);
+
+      if (_verbose) std::cout << "dmin = " << dmin << std::endl;
 
       if (dmin > _roi_radius) remove = true;
       else {
@@ -125,8 +129,10 @@ namespace larlite {
 	if ( (pt_close_idx < 0) || (pt_far_idx < 0) ) continue;
 
 	//std::cout << "compare point " << ptx << ", " << pty << std::endl;
-	//std::cout << "\t\t near "    << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
-	//std::cout << "\t\t far  "    << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
+	if (_verbose) {
+	  std::cout << "\t\t near "    << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
+	  std::cout << "\t\t far  "    << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
+	}
 
 	// are near and far points outside of ROI?
 	
@@ -139,7 +145,10 @@ namespace larlite {
 	double l_track = sqrt( pow(hit_w_v[pt_far_idx] - hit_w_v[pt_close_idx], 2) +
 			       pow(hit_t_v[pt_far_idx] - hit_t_v[pt_close_idx], 2) );
 
-	//std::cout << "from vtx, near : " << d_close << ", " << "\t far : " << d_far << std::endl;
+	if (_verbose) {
+	  std::cout << "from vtx, near : " << d_close << ", " << "\t far : " << d_far << std::endl;
+	  std::cout << "track length : " << l_track << std::endl;
+	}
 	
 	if ( (d_close > _roi_radius) && (d_far > _roi_radius) )
 	  remove = true;
@@ -150,8 +159,13 @@ namespace larlite {
 	double y0 = _vtx_t_cm[pl];
 	double IP = fabs( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
 
+	if (_verbose) std::cout << "IP = " << IP << std::endl;
+
 	// max IP allowed, but one end of the track must be outside of ROI
 	if ( (IP > 30.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) ) remove = true;
+
+	// max track length > IP and IP above some value
+	if ( (IP > 25.) && ( l_track > IP ) ) remove = true;
 
 	// construct triangle OAB with O = vertex, A & B the two ends of the cluster
 	// angle AOB is the angle on which to cut. If large cluster uncorrelated
@@ -168,9 +182,15 @@ namespace larlite {
 	double cos = (OAy*OBy + OAx*OBx) / (OAm * OBm);
 	//std::cout << "dot product is " << cos << std::endl;
 	double angle = 180. * acos(cos) / 3.14;
-	//std::cout << "angle is " << angle << std::endl;
+	if (_verbose) std::cout << "angle is " << angle << std::endl;
+
+	if ( (angle > 80) && (dmin > 15.) && ( (d_close > _roi_radius/2.) || (d_far > _roi_radius/2.) ) )
+	  remove = true;
 	
 	if ( (angle > 50) && (dmin > 4.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
+	  remove = true;
+
+	if ( (angle > 35) && (dmin > 10.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
 	  remove = true;
 
 	if ( (l_track > _roi_radius) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )

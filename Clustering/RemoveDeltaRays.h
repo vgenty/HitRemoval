@@ -53,14 +53,25 @@ namespace larlite {
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
 
-    /// set ROI size (cm away from vtx)
-    void setROIRadius(double r) { _roi_radius = r; }
+    /// set delta-ray distances
+    void setDeltaRayDistMin(double d) { _d_delta_min = d; }
+    void setDeltaRayDistMax(double d) { _d_delta_max = d; }
 
     /// Set Producers
     void setClusterProducer(std::string s) { _clusProducer = s; }
     void setVertexProducer (std::string s) { _vtxProducer  = s; }
 
   protected:
+
+    /// function that determines if cluster is a delta-rays
+    bool DeltaRay(const std::vector<unsigned int>& muon,
+		  const std::vector<unsigned int>& deltaray);
+
+    // distance between hits
+    double _distSq_(const larlite::hit& h1, const larlite::hit& h2);
+
+    // keep track of event hits
+    event_hit* _ev_hit;
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
@@ -76,8 +87,8 @@ namespace larlite {
     std::string _clusProducer;
     std::string _vtxProducer;
 
-    /// ROI radius
-    double _roi_radius;
+    // minimum & max dist to delta-ray
+    double _d_delta_min, _d_delta_max;
     
   };
 }
