@@ -10,8 +10,11 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::PandoraLinearRemoval+;
+#pragma link C++ class larlite::ProximityLinearRemoval+;
+#pragma link C++ class larlite::VertexTrackRemoval+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
+
 
 
 

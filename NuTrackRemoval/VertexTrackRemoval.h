@@ -1,9 +1,9 @@
 /**
- * \file PandoraLinearRemoval.h
+ * \file VertexTrackRemoval.h
  *
  * \ingroup Clusterer
  * 
- * \brief Class def header for a class PandoraLinearRemoval
+ * \brief Class def header for a class VertexTrackRemoval
  *
  * @author david caratelli
  */
@@ -12,11 +12,12 @@
 
     @{*/
 
-#ifndef LARLITE_PANDORALINEARREMOVAL_H
-#define LARLITE_PANDORALINEARREMOVAL_H
+#ifndef LARLITE_VERTEXTRACKREMOVAL_H
+#define LARLITE_VERTEXTRACKREMOVAL_H
 
 #include "Analysis/ana_base.h"
-#include "DataFormat/hit.h"
+
+#include "DataFormat/vertex.h"
 
 #include "TwoDimTools/Linearity.h"
 
@@ -24,30 +25,30 @@
 
 namespace larlite {
   /**
-     \class PandoraLinearRemoval
+     \class VertexTrackRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class PandoraLinearRemoval : public ana_base{
+  class VertexTrackRemoval : public ana_base{
   
   public:
 
     /// Default constructor
-    PandoraLinearRemoval();
+    VertexTrackRemoval();
 
     /// Default destructor
-    virtual ~PandoraLinearRemoval(){}
+    virtual ~VertexTrackRemoval(){}
 
-    /** IMPLEMENT in PandoraLinearRemoval.cc!
+    /** IMPLEMENT in VertexTrackRemoval.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in PandoraLinearRemoval.cc! 
+    /** IMPLEMENT in VertexTrackRemoval.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in PandoraLinearRemoval.cc! 
+    /** IMPLEMENT in VertexTrackRemoval.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -62,18 +63,16 @@ namespace larlite {
     void setDebug  (bool on) { _debug   = on; }
     
 
-    /// set max distance pandora cluster can have to vertex
-    /// in order to be considered for linear removal at this
-    /// stage.
-    void setMaxDVtx(double d) { _dvtx_max = d; }
-    /// set ROI bound. Clusters escaping this region will be removed
-    void setROIRadius(double r) { _roi_rad = r; }
+    /// set vertex radius
+    void setVtxRadius(double r) { _vtx_rad = r; }
     
     /// Set Producers
     void setClusterProducer(std::string s) { _clusterProducer = s; }
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
   protected:
+
+    bool loadVertex(event_vertex* ev_vtx);
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
@@ -84,11 +83,8 @@ namespace larlite {
     // min number of hits for cluster to be considered for removal
     std::vector<int>    _min_n_hits_v;
 
-    /// max vtx-clus distance allowed
-    double _dvtx_max;
-
     /// ROI radius
-    double _roi_rad;
+    double _vtx_rad;
     
     /// verbosity flag
     bool _verbose;
@@ -102,7 +98,6 @@ namespace larlite {
     std::string _clusterProducer;
     std::string _vertexProducer;
 
-    TTree* _tree;
     int _nhits;
     double _lin;
     double _local_lin_truncated;

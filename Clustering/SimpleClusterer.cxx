@@ -341,6 +341,8 @@ namespace larlite {
     if (TimeOverlap(h1,h2,dt) == true)
       dt = 0;
     double dw = ((double)h1.Channel()-(double)h2.Channel())*_wire2cm;
+    if (dw >  0.3) dw -= 0.3;
+    if (dw < -0.3) dw += 0.3;
     double d = dt*dt + dw*dw;
     if (d > (_radius*_radius))
       return false;

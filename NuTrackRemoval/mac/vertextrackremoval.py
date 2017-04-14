@@ -29,37 +29,37 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("hitremoval.root")
+my_proc.set_output_file("hitremoval_vtx.root")
 
 # prepare the various hit removal stages
 
-algo = fmwk.PandoraLinearRemoval()
+algo = fmwk.VertexTrackRemoval()
 #algo.setDebug(True)
-algo.setClusterProducer("pandoraCosmic")
+algo.setClusterProducer("sc")
 algo.setVertexProducer("mcvertex")
-n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
-lin_v  = [.02,.10,.10,.13,.16,.19,.22,.30,.40,.45]
-for i,n in enumerate(n_hits):
-    algo.setMinNHits( n )
-    if (n < 20) : algo.setMaxLinearity(0.0)
-    else:
-        algo.setMaxLinearity( (0.1 / 120.) * (n - 20) )
+for n in xrange(15):
+    nhits = n * 20
+    algo.setMinNHits( nhits )
+    print 'nhits : %i',nhits
+    if (nhits <= 20) :
+        algo.setMaxLinearity(0.03)
+        print 'max lin : 0.02'
+    else :
+        val = (0.3 / 120.) * (nhits - 20)
+        algo.setMaxLinearity( val )
+        print 'max lin : %.02f'%val
+    print
+        
+algo.setVtxRadius(3.5)
+algo.setDebug(False)
 
-algo.setMaxDVtx(5.)
-algo.setROIRadius(100.)
-    
 my_proc.add_process( algo )
-
-my_proc.set_data_to_write(fmwk.data.kVertex,  "mcvertex"      )
-my_proc.set_data_to_write(fmwk.data.kCluster, "pandoraCosmic" )
-my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic" )
-my_proc.set_data_to_write(fmwk.data.kHit,     "gaushit" )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run()
 
 sys.exit()
 
