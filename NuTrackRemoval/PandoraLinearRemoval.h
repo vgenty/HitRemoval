@@ -16,7 +16,9 @@
 #define LARLITE_PANDORALINEARREMOVAL_H
 
 #include "Analysis/ana_base.h"
+
 #include "DataFormat/hit.h"
+#include "DataFormat/vertex.h"
 
 #include "TwoDimTools/Linearity.h"
 
@@ -68,12 +70,18 @@ namespace larlite {
     void setMaxDVtx(double d) { _dvtx_max = d; }
     /// set ROI bound. Clusters escaping this region will be removed
     void setROIRadius(double r) { _roi_rad = r; }
+    /// set maximum vtx. distance for a possible proton
+    void setProtonDMax(double d) { _proton_dmax = d; }
+    /// maximum SSV for protons
+    void setMaxSSV(double l) { _ssv_max = l; }
     
     /// Set Producers
     void setClusterProducer(std::string s) { _clusterProducer = s; }
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
   protected:
+
+    bool loadVertex(event_vertex *ev_vtx);
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
@@ -86,6 +94,12 @@ namespace larlite {
 
     /// max vtx-clus distance allowed
     double _dvtx_max;
+
+    /// PROTON CUTS
+    /// maximum proton length
+    double _proton_dmax;
+    /// maximum SSV
+    double _ssv_max;
 
     /// ROI radius
     double _roi_rad;
@@ -102,7 +116,6 @@ namespace larlite {
     std::string _clusterProducer;
     std::string _vertexProducer;
 
-    TTree* _tree;
     int _nhits;
     double _lin;
     double _local_lin_truncated;

@@ -29,20 +29,21 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("hitremoval_sc.root")
+my_proc.set_output_file("hitremoval_lr.root")
 
 # prepare the various hit removal stages
 
-algo = fmwk.ProximityLinearRemoval()
+algo = fmwk.LinearRemoval()
 #algo.setDebug(True)
 algo.setClusterProducer("sc")
-algo.setVertexProducer("mcvertex")
 n_hits = [i*10 for i in xrange(1,30)]
 for i,n in enumerate(n_hits):
     algo.setMinNHits( n )
-    if (n < 20) : algo.setMaxLinearity(0.0)
+    if (n < 20) : algo.setMaxLinearity(0.0001)
     else:
-        algo.setMaxLinearity( (0.2 / 120.) * (n - 20) )
+        algo.setMaxLinearity( (0.1 / 120.) * (n - 20) )
+algo.setMaxSSV(0.1)
+algo.setDebug(False)
 
 my_proc.add_process( algo )
 
@@ -55,7 +56,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run()
 
 sys.exit()
 

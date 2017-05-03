@@ -26,7 +26,7 @@ for x in xrange(len(sys.argv)-1):
 my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 
 # Specify analysis output root file name
-#my_proc.set_ana_output_file("hitremoval_ana.root");
+my_proc.set_ana_output_file("hitremoval_ana.root");
 
 # Specify data output root file name
 my_proc.set_output_file("hitremoval.root")
@@ -35,7 +35,7 @@ my_proc.set_output_file("hitremoval.root")
 
 _hitproducer    = "gaushit"
 _clusproducer   = "pandoraCosmic"
-_vtxproducer    = "numuCC_vertex"
+_vtxproducer    = "numuCC_vertex"  #"mcvertex"#"numuCC_vertex"
 _clusproducer01 = "clus01"
 _clusproducer02 = "clus02"
 _clusproducer03 = "clus03"
@@ -46,9 +46,10 @@ _hitassproducer = "pandoraCosmicKHitRemoval"
 
 def hitremoval00():
 
-    algo = fmwk.LinearClusterSubsetRemoval()
+    algo = fmwk.CosmicRemoval()
     algo.setClusterProducer(_clusproducer)
     algo.setVertexProducer(_vtxproducer)
+    algo.setVerbose(False)
 
     n_hits = [  3, 10, 20, 30, 50, 70,100,130,180,230]
     lin_v  = [.02,.06,.10,.10,.10,.10,.10,.12,.20,.30]
@@ -118,9 +119,9 @@ my_proc.add_process( hitremoval02() )
 #my_proc.add_process( hitremoval03() )
 #my_proc.add_process( hitremoval04() )
 
-#my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
+my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
 #my_proc.set_data_to_write(fmwk.data.kMCTrack,  "mcreco"     )
-#my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
+my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
 my_proc.set_data_to_write(fmwk.data.kVertex,   _vtxproducer )
 
 my_proc.set_data_to_write(fmwk.data.kHit,         _hitproducer    )

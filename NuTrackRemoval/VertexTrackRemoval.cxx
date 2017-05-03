@@ -152,7 +152,7 @@ namespace larlite {
 
       twodimtools::Linearity lin(hit_w_v,hit_t_v);
 
-      _nhits                = hit_w_v.size();
+      _nhits               = hit_w_v.size();
       _lin                 = lin._lin;
       _local_lin_avg       = lin._local_lin_avg;
       _local_lin_truncated = lin._local_lin_truncated_avg;

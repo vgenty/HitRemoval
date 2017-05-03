@@ -11,9 +11,7 @@
 
 namespace larlite {
 
-  PandoraLinearRemoval::PandoraLinearRemoval()
-    : _tree(nullptr)
-  {
+  PandoraLinearRemoval::PandoraLinearRemoval()  {
 
     _name        = "PandoraLinearRemoval";
     _fout        = 0;
@@ -33,13 +31,6 @@ namespace larlite {
   }
 
   bool PandoraLinearRemoval::initialize() {
-
-    if (_tree) delete _tree;
-    _tree = new TTree("linearclusterremoval","Linear Cluster Removal TTree");
-    _tree->Branch("_nhits",&_nhits,"nhits/I");
-    _tree->Branch("_lin",  &_lin  ,"lin/D"  );
-    _tree->Branch("_local_lin_truncated",  &_local_lin_truncated  ,"local_lin_truncated/D"  );
-    _tree->Branch("_local_lin_avg",  &_local_lin_avg  ,"local_lin_avg/D"  );
 
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
@@ -75,8 +66,10 @@ namespace larlite {
   
   bool PandoraLinearRemoval::analyze(storage_manager* storage) {
     
-    if ( (_clusterProducer == "") || (_vertexProducer == "") )
-      { std::cout << "Producers not specified...exit" << std::endl; return false; }
+    if ( (_clusterProducer == "") || (_vertexProducer == "") ) {
+      print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
+      return false;
+    }
 
     auto ev_clus = storage->get_data<event_cluster>(_clusterProducer);
 
@@ -89,32 +82,22 @@ namespace larlite {
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
 
+
     if (!ev_hit){
-      std::cout << "No hits!" << std::endl;
+      print(larlite::msg::kERROR,__FUNCTION__,"no hits");
       return false;
     }
 
     if (!ev_vtx){
-      std::cout << "No hits!" << std::endl;
+      print(larlite::msg::kERROR,__FUNCTION__,"no vertex");
       return false;
     }
-
-    // get vertex position on each plane
-    if ( (ev_vtx->size() == 1) ){
-      auto const& vtx = ev_vtx->at(0);
-      auto geoH = larutil::GeometryHelper::GetME();
-      auto geom = larutil::Geometry::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
-      for (size_t pl = 0; pl < 3; pl++){
-	double *origin;
-	origin = new double[3];
-	geom->PlaneOriginVtx(pl,origin);
-	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
-	_vtx_w_cm[pl] = pt.w;
-	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
-      }
+    
+    if (loadVertex(ev_vtx) == false) {
+      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
+      return false;
     }
-
+    
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
@@ -141,8 +124,6 @@ namespace larlite {
       for (auto const& hit_idx : hit_idx_v){
 	hit_w_v.push_back( ev_hit->at(hit_idx).WireID().Wire  * _wire2cm );
 	hit_t_v.push_back( ev_hit->at(hit_idx).PeakTime()     * _time2cm );
-	//std::cout << "\t\t pt @ [ " << hit_w_v.at(hit_w_v.size()-1) << ", "
-	//<< hit_t_v.at(hit_t_v.size()-1) << " ]" << std::endl;
       }
 
       // figure out the minimum distance between this cluster
@@ -157,12 +138,14 @@ namespace larlite {
 	if (dd < dvtx_min) { dvtx_min = dd; }
 	if (dd > dvtx_max) { dvtx_max = dd; }
       }
+      dvtx_min = sqrt(dvtx_min);
+      dvtx_max = sqrt(dvtx_max);
 
       // only look at clusters starting close to the vertex.
-      if (sqrt(dvtx_min) > _dvtx_max) continue;
+      if (dvtx_min > _dvtx_max) continue;
 
       // if the cluster exits the ROI, remove
-      if (sqrt(dvtx_max) > _roi_rad ) remove = true;
+      if (dvtx_max > _roi_rad) remove = true;
 
       twodimtools::Linearity lin(hit_w_v,hit_t_v);
 
@@ -178,16 +161,23 @@ namespace larlite {
 		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl
 		  << "\t MAX LIN         : " << max_lin << std::endl;
 	
-	
-      _tree->Fill();
 
+      // remove muons
+      // require a maximum linearity
       if (_local_lin_truncated < max_lin){
-	if (_debug) std::cout << "\t REMOVE CLUSTER" << std::endl;
+	if (_debug) std::cout << "\t REMOVE MUON/PION" << std::endl;
 	remove = true;
       }
 
+      // remove protons
+      // require maximum SSV
+      // and impose a maximum distance from vertex
+      if ( (lin._summed_square_variance < _ssv_max) && (dvtx_max < _proton_dmax) ) {
+	if (_debug) std::cout << "\t REMOVE PROTON" << std::endl;
+	remove = true;
+      }
+      
       if (remove) {
-	std::cout << "\t\tremoved!" << std::endl;
 	for (auto const& hit_idx : hit_idx_v){
 	  ev_hit->at(hit_idx).set_goodness(-1.0);
 	}
@@ -200,11 +190,29 @@ namespace larlite {
 
   bool PandoraLinearRemoval::finalize() {
 
-    if (_fout){
-      _fout->cd();
-      _tree->Write();
-    }
-      
+    return true;
+  }
+
+
+  bool PandoraLinearRemoval::loadVertex(event_vertex* ev_vtx) {
+    
+    if (ev_vtx->size() != 1) return false;
+    
+    // get vertex position on each plane
+    if ( (ev_vtx->size() == 1) ){
+      auto const& vtx = ev_vtx->at(0);
+      auto geoH = larutil::GeometryHelper::GetME();
+      auto geom = larutil::Geometry::GetME();
+      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+      for (size_t pl = 0; pl < 3; pl++){
+	double *origin;
+	origin = new double[3];
+	geom->PlaneOriginVtx(pl,origin);
+	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
+	_vtx_w_cm[pl] = pt.w;
+	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
+      }
+    }    
 
     return true;
   }

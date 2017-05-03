@@ -431,8 +431,9 @@ namespace larlite {
       if ( (_vtxProducer != "") && (_useVtx == true) ){
 	double d = sqrt( ( (t - _vtx_t_cm[plane]) * (t - _vtx_t_cm[plane]) ) +
 			 ( (w - _vtx_w_cm[plane]) * (w - _vtx_w_cm[plane]) ) );
-	if (d < _vtx_radius)
+	if (d < _vtx_radius){
 	  continue;
+	}
       }
       
       // map is (i,j) -> hit list
