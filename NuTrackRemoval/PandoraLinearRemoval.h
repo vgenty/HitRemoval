@@ -54,10 +54,10 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// set maximum linearity allowed for this
-    void setMaxLinearity(double l) { _max_lin_v.push_back( l ); }
-    /// set minimum number of hits
-    void setMinNHits(int n) { _min_n_hits_v.push_back( n ); }
+    void addSlopePt(double slope, double lin) {
+      _pts_x_v.push_back(slope);
+      _pts_y_v.push_back(lin);
+    }
     
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
@@ -74,6 +74,10 @@ namespace larlite {
     void setProtonDMax(double d) { _proton_dmax = d; }
     /// maximum SSV for protons
     void setMaxSSV(double l) { _ssv_max = l; }
+    /// set max slope
+    void setSlopeMin(double s) { _slope_min = s; }
+    /// set maximum local linearity for low-slope clusters
+    void setLLT(double l ) { _llt_min = l; }
     
     /// Set Producers
     void setClusterProducer(std::string s) { _clusterProducer = s; }
@@ -83,15 +87,23 @@ namespace larlite {
 
     bool loadVertex(event_vertex *ev_vtx);
 
+    bool lineCut(const double& x, const double&y);
+
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
     std::vector<double> _vtx_t_cm;
 
-    /// maximum linearity for hits
-    std::vector<double> _max_lin_v;
-    // min number of hits for cluster to be considered for removal
-    std::vector<int>    _min_n_hits_v;
+    // slope separation value
+    double _slope_min;
 
+    double _llt_min;
+
+    // vector of x/y points on slope/intercept curve
+    std::vector<double> _pts_x_v;
+    std::vector<double> _pts_y_v;
+    std::vector<double> _slope;
+    std::vector<double> _intercept;
+    
     /// max vtx-clus distance allowed
     double _dvtx_max;
 

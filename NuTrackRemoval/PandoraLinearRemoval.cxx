@@ -22,8 +22,6 @@ namespace larlite {
     _clusterProducer = "";
     _vertexProducer  = "";
     
-    _max_lin_v = {0.0};
-    _min_n_hits_v = {0};
 
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
@@ -40,25 +38,29 @@ namespace larlite {
     std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
     std::cout << "********************************" << std::endl;
 
-    // make sure _max_lin_v and _min_n_his_v have the same size
-    if (_max_lin_v.size() != _min_n_hits_v.size()){
-      std::cout << "_max_lin_v and _min_n_hits_v do not have the same size! exit..." << std::endl;
-      return false;
-    }
 
-    // make sure values are increasing for nhits requirement and decreasing for linearity requirement
-    for (size_t i=0; i < _max_lin_v.size() - 1; i++){
-      if (_max_lin_v[i+1] < _max_lin_v[i]){
-	std::cout << "_max_lin_v values decreasing! quit..." << std::endl;
-	return false;
+    _intercept.clear();
+    _slope.clear();
+
+    for (size_t i=1; i < _pts_x_v.size(); i++) {
+
+      auto const& x1 = _pts_x_v[i-1];
+      auto const& x2 = _pts_x_v[i];
+      auto const& y1 = _pts_y_v[i-1];
+      auto const& y2 = _pts_y_v[i];
+      
+      double s = (y2-y1)/(x2-x1);
+      double m = y1 - s * x1;
+
+      if (_debug) {
+	std::cout << "pt0 -> [ " << x1 << ", " << y1 << " ]" << std::endl;
+	std::cout << "pt1 -> [ " << x2 << ", " << y2 << " ]" << std::endl;
+	std::cout << "slope = " << s << "\t intercept = " << m << std::endl;
       }
-    }
-    
-    for (size_t i=0; i < _min_n_hits_v.size() - 1; i++){
-      if (_min_n_hits_v[i+1] < _min_n_hits_v[i]){
-	std::cout << "_min_n_hits_v values decreasing! quit..." << std::endl;
-	return false;
-      }
+
+      _slope.push_back( s );
+      _intercept.push_back( m );
+      
     }
 
     return true;
@@ -107,14 +109,6 @@ namespace larlite {
 
       bool remove = false;
 
-      // determine the linearity threshold for this cluster
-      double max_lin = _max_lin_v[0];
-      for (size_t n=0; n < _min_n_hits_v.size(); n++){
-	auto const& min_n_hits = _min_n_hits_v[n];
-	if ( hit_idx_v.size() > min_n_hits )
-	  max_lin = _max_lin_v[n];
-      }
-      
       // get coordinates of hits to calculate linearity
       std::vector<double> hit_w_v;
       std::vector<double> hit_t_v;
@@ -155,20 +149,33 @@ namespace larlite {
       _local_lin_truncated = lin._local_lin_truncated_avg;
 
       if (_debug)
-	std::cout << "Cluster size : " << hit_w_v.size() << std::endl
-		  << "\t lin             : " << lin._lin << std::endl
-		  << "\t local lin avg   : " << lin._local_lin_avg << std::endl
-		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl
-		  << "\t MAX LIN         : " << max_lin << std::endl;
-	
+	std::cout << "Cluster size : " << hit_w_v.size()   << std::endl
+		  << "\t slope           : " << lin._slope << std::endl
+		  << "\t lin             : " << lin._lin   << std::endl
+		  << "\t local lin avg   : " << lin._local_lin_avg           << std::endl
+		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl;
 
       // remove muons
-      // require a maximum linearity
-      if (_local_lin_truncated < max_lin){
-	if (_debug) std::cout << "\t REMOVE MUON/PION" << std::endl;
-	remove = true;
-      }
 
+      // 2 separate cases depending on slope of the cluster
+
+      if (_nhits > 20) {
+	
+	if ( fabs(lin._slope) < _slope_min) {
+	  if (lin._local_lin_truncated_avg < _llt_min) {
+	    if (_debug) std::cout << "\t REMOVE MUON/PION w/ small slope" << std::endl;
+	    remove = true;
+	  }
+	}// small slope case
+	else {
+	  if (lineCut(fabs(lin._slope),lin._local_lin_truncated_avg) == true) {
+	    if (_debug) std::cout << "\t REMOVE MUON/PION w/ large slope" << std::endl;
+	    remove = true;
+	  }
+	}// if slope is large
+	
+      }// require min num of hits
+      
       // remove protons
       // require maximum SSV
       // and impose a maximum distance from vertex
@@ -215,6 +222,36 @@ namespace larlite {
     }    
 
     return true;
+  }
+
+  bool PandoraLinearRemoval::lineCut(const double& x, const double& y) {
+
+    if (_debug) { std::cout << "\t\t slope : " << x << "\t lin : " << y << std::endl; } 
+    
+    for (size_t pt=1; pt < _pts_x_v.size(); pt++) {
+
+      auto const& ptx = _pts_x_v[pt];
+
+      if (x < ptx) {
+      
+	auto const& s = _slope[pt-1];
+	auto const& m = _intercept[pt-1];
+
+	if (_debug) { std::cout << "\t\t slope < " << ptx << std::endl; }
+
+	if (_debug) { std::cout << "\t\t cut value is : " << (s*x+m) << std::endl; } 
+
+	if (y < (s*x+m)) return true;
+	else return false;
+	
+      }
+      
+    }// for all points on the line
+
+    std::cout << "ERROR" << std::endl;
+    
+    return false;
+    
   }
 
 }
