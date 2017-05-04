@@ -47,6 +47,7 @@ namespace larlite {
   protected:
 
   int _event ;
+  int e ;
 
   std::string _vtx_producer;
   std::string _trk_producer;
