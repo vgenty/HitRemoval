@@ -61,6 +61,7 @@ namespace larlite {
     int    _pl;
     int    _nhits;
     double _lin;
+    double _ssv;
     double _local_lin_truncated;
     double _local_lin_avg;
     double _slope;

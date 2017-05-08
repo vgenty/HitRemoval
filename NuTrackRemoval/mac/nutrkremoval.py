@@ -29,7 +29,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("hitremoval_pandora.root")
+my_proc.set_output_file("hitremoval_nutrk.root")
 
 # prepare the various hit removal stages
 
@@ -54,7 +54,7 @@ def algo00():
     return algo
 
 # 1st: remove delta-rays
-def hitremoval01():
+def algo01():
 
     algo = fmwk.TrackDeltaRayRemoval()
     algo.setClusterProducer("pandoraCosmic")
@@ -99,6 +99,8 @@ def algo03():
             val = (0.3 / 120.) * (nhits - 20)
             algo.setMaxLinearity( val )
     algo.setVtxRadius(3.5)
+    algo.setMaxProtonDist(15.)
+    algo.setMaxProtonLin(0.2)
     algo.setDebug(False)
     return algo
 
@@ -127,20 +129,28 @@ def algo05():
 
     return algo
 
-# 6th: remove 
+my_proc.add_process( algo00() )
+my_proc.add_process( algo01() )
+my_proc.add_process( algo02() )
+my_proc.add_process( algo03() )
+my_proc.add_process( algo04() )
+my_proc.add_process( algo05() )
 
-my_proc.add_process( algo )
 
-my_proc.set_data_to_write(fmwk.data.kVertex,  "mcvertex"      )
-my_proc.set_data_to_write(fmwk.data.kCluster, "pandoraCosmic" )
-my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic" )
-my_proc.set_data_to_write(fmwk.data.kHit,     "gaushit" )
+#my_proc.set_data_to_write(fmwk.data.kMCTruth,     "generator"     )
+#my_proc.set_data_to_write(fmwk.data.kVertex,      "mcvertex"      )
+#my_proc.set_data_to_write(fmwk.data.kCluster,     "sc"            )
+#my_proc.set_data_to_write(fmwk.data.kAssociation, "sc"            )
+#my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic" )
+#my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic" )
+#my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"       )
+
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run()
 
 sys.exit()
 

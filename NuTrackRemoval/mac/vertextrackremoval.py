@@ -51,6 +51,8 @@ for n in xrange(15):
     print
         
 algo.setVtxRadius(3.5)
+algo.setMaxProtonDist(15.)
+algo.setMaxProtonLin(0.2)
 algo.setDebug(False)
 
 my_proc.add_process( algo )

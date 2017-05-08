@@ -161,11 +161,22 @@ namespace larlite {
 	std::cout << "\t lin             : " << lin._lin << std::endl
 		  << "\t local lin avg   : " << lin._local_lin_avg << std::endl
 		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl
-		  << "\t MAX LIN         : " << max_lin << std::endl;
+		  << "\t low vtx dist    : " << dvtx_min << std::endl
+		  << "\t high vtx dist   : " << dvtx_max << std::endl
+		  << "\t MAX LIN         : " << max_lin << std::endl
+		  << "\t MAX PROT DIST   : " << _max_proton_dist << std::endl
+		  << "\t MAX PROT LIN    : " << _max_proton_lin << std::endl;
 	
-	
+
+      // remove linear clusters
       if (_local_lin_truncated < max_lin){
 	if (_debug) std::cout << "\t REMOVE CLUSTER" << std::endl;
+	remove = true;
+      }
+
+      // remove protons
+      if ( (dvtx_max < _max_proton_dist) && (_local_lin_truncated < _max_proton_lin) ) {
+	if (_debug) std::cout << "\t REMOVE PROTONS" << std::endl;
 	remove = true;
       }
 

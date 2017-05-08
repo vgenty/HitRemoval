@@ -57,6 +57,10 @@ namespace larlite {
     void setMaxLinearity(double l) { _max_lin_v.push_back( l ); }
     /// set minimum number of hits
     void setMinNHits(int n) { _min_n_hits_v.push_back( n ); }
+    /// set maximum proton linearity
+    void setMaxProtonLin(double l)  { _max_proton_lin = l; }
+    /// set max proton distance
+    void setMaxProtonDist(double d) { _max_proton_dist = d; }
     
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
@@ -85,6 +89,10 @@ namespace larlite {
 
     /// ROI radius
     double _vtx_rad;
+    /// max proton distance
+    double _max_proton_dist;
+    /// max proton linearity
+    double _max_proton_lin;
     
     /// verbosity flag
     bool _verbose;

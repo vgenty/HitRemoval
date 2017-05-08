@@ -21,6 +21,7 @@ namespace larlite {
     _tree->Branch("_pl",&_pl,"pl/I");
     _tree->Branch("_nhits",&_nhits,"nhits/I");
     _tree->Branch("_lin",  &_lin  ,"lin/D"  );
+    _tree->Branch("_ssv",  &_ssv  ,"ssv/D"  );
     _tree->Branch("_slope",  &_slope  ,"slope/D"  );
     _tree->Branch("_local_lin_truncated",  &_local_lin_truncated  ,"local_lin_truncated/D"  );
     _tree->Branch("_local_lin_avg",  &_local_lin_avg  ,"local_lin_avg/D"  );
@@ -60,6 +61,7 @@ namespace larlite {
       _slope               = lin._slope;
       _local_lin_avg       = lin._local_lin_avg;
       _local_lin_truncated = lin._local_lin_truncated_avg;
+      _ssv                 = lin._summed_square_variance;
 
       _tree->Fill();
 
