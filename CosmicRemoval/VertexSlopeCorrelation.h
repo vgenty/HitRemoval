@@ -1,9 +1,9 @@
 /**
- * \file RemoveCosmicTracks.h
+ * \file VertexSlopeCorrelation.h
  *
  * \ingroup Clustering
  * 
- * \brief Class def header for a class RemoveCosmicTracks
+ * \brief Class def header for a class VertexSlopeCorrelation
  *
  * @author david
  */
@@ -12,8 +12,8 @@
 
     @{*/
 
-#ifndef LARLITE_REMOVECOSMICTRACKS_H
-#define LARLITE_REMOVECOSMICTRACKS_H
+#ifndef LARLITE_VERTEXSLOPECORRELATION_H
+#define LARLITE_VERTEXSLOPECORRELATION_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
@@ -22,38 +22,42 @@
 
 namespace larlite {
   /**
-     \class RemoveCosmicTracks
+     \class VertexSlopeCorrelation
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveCosmicTracks : public ana_base{
+  class VertexSlopeCorrelation : public ana_base{
   
   public:
 
     /// Default constructor
-    RemoveCosmicTracks();
+    VertexSlopeCorrelation();
 
     /// Default destructor
-    virtual ~RemoveCosmicTracks(){}
+    virtual ~VertexSlopeCorrelation(){}
 
-    /** IMPLEMENT in RemoveCosmicTracks.cc!
+    /** IMPLEMENT in VertexSlopeCorrelation.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in RemoveCosmicTracks.cc! 
+    /** IMPLEMENT in VertexSlopeCorrelation.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in RemoveCosmicTracks.cc! 
+    /** IMPLEMENT in VertexSlopeCorrelation.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
-
-    /// set ROI size (cm away from vtx)
+    
+    // set max IP
+    void setMaxIP(double IP) { _IP_max = IP; }
+    // set min number of hits for cluster to be considered
+    void setMinNHits(int n) { _min_nhits = n; }
+    // set ROI radius (cm)
     void setROIRadius(double r) { _roi_radius = r; }
 
     /// Set Producers
@@ -76,7 +80,8 @@ namespace larlite {
     std::string _clusProducer;
     std::string _vtxProducer;
 
-    /// ROI radius
+    double _IP_max;
+    int _min_nhits;
     double _roi_radius;
     
   };

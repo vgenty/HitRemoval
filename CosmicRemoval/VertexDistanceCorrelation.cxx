@@ -1,7 +1,7 @@
-#ifndef LARLITE_REMOVECOSMICTRACKS_CXX
-#define LARLITE_REMOVECOSMICTRACKS_CXX
+#ifndef LARLITE_VERTEXDISTANCECORRELATION_CXX
+#define LARLITE_VERTEXDISTANCECORRELATION_CXX
 
-#include "RemoveCosmicTracks.h"
+#include "VertexDistanceCorrelation.h"
 #include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/cluster.h"
@@ -9,9 +9,9 @@
 
 namespace larlite {
 
-  RemoveCosmicTracks::RemoveCosmicTracks() {
+  VertexDistanceCorrelation::VertexDistanceCorrelation() {
 
-    _name        = "RemoveCosmicTracks";
+    _name        = "VertexDistanceCorrelation";
     _fout        = 0;
     _verbose     = false;
     _clusProducer = "";
@@ -22,7 +22,7 @@ namespace larlite {
     
   }
 
-  bool RemoveCosmicTracks::initialize() {
+  bool VertexDistanceCorrelation::initialize() {
 
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
@@ -30,7 +30,7 @@ namespace larlite {
     return true;
   }
   
-  bool RemoveCosmicTracks::analyze(storage_manager* storage) {
+  bool VertexDistanceCorrelation::analyze(storage_manager* storage) {
 
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
@@ -39,7 +39,7 @@ namespace larlite {
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
 
     if (!ev_hit){
-      std::cout << "No hits!" << std::endl;
+      print(larlite::msg::kWARNING,__FUNCTION__,"no hits");
       return false;
     }
     
@@ -53,6 +53,10 @@ namespace larlite {
 	_vtx_w_cm[pl] = pt.w;
 	_vtx_t_cm[pl] = pt.t + 800 * _time2cm;
       }
+    }
+    else {
+      print(larlite::msg::kERROR,__FUNCTION__,"no vertex found!");
+      return false;
     }
 
     // loop trhough each cluster
@@ -68,6 +72,8 @@ namespace larlite {
       larlite::cluster out_clus;
 
       auto hit_idx_v = ass_cluster_hit_v[i];
+
+      if (hit_idx_v.size() < 10) continue;
 
       bool remove = false;
 
@@ -89,6 +95,9 @@ namespace larlite {
       double dmin = 1000000.;
       double wmin = 0;
       double tmin = 0;
+
+      // has this cluster already been removed? if so don't bother investigating
+      if (ev_hit->at(0).GoodnessOfFit() < 0) continue;
       
       for (auto const& hit_idx : hit_idx_v){
 	double w = ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
@@ -104,6 +113,7 @@ namespace larlite {
       if (_verbose) std::cout << "dmin = " << dmin << std::endl;
 
       if (dmin > _roi_radius) remove = true;
+      
       else {
 	
 	twodimtools::Linearity lin(hit_w_v,hit_t_v);
@@ -128,11 +138,7 @@ namespace larlite {
 
 	if ( (pt_close_idx < 0) || (pt_far_idx < 0) ) continue;
 
-	//std::cout << "compare point " << ptx << ", " << pty << std::endl;
-	if (_verbose) {
-	  std::cout << "\t\t near "    << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
-	  std::cout << "\t\t far  "    << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
-	}
+	if (d_far < _roi_radius) continue;
 
 	// are near and far points outside of ROI?
 	
@@ -141,6 +147,9 @@ namespace larlite {
 	
 	d_far = sqrt( (_vtx_w_cm[pl] - hit_w_v[pt_far_idx]) * (_vtx_w_cm[pl] - hit_w_v[pt_far_idx]) +
 		      (_vtx_t_cm[pl] - hit_t_v[pt_far_idx]) * (_vtx_t_cm[pl] - hit_t_v[pt_far_idx]) );
+
+	double dtmp;
+	if (d_far < d_close) { dtmp = d_close; d_close = d_far; d_far = dtmp; }
 
 	double l_track = sqrt( pow(hit_w_v[pt_far_idx] - hit_w_v[pt_close_idx], 2) +
 			       pow(hit_t_v[pt_far_idx] - hit_t_v[pt_close_idx], 2) );
@@ -152,50 +161,57 @@ namespace larlite {
 	
 	if ( (d_close > _roi_radius) && (d_far > _roi_radius) )
 	  remove = true;
-
 	
 	// impact parameter to vertex:
 	double x0 = _vtx_w_cm[pl];
 	double y0 = _vtx_t_cm[pl];
+
+	// given the best-fit line and the vertex point
+	// find the coordinate of the intersection between best-fit
+	// and line perp. to best-fit passing through vertex
+	double s1 = lin._slope;
+	double m1 = lin._intercept;
+	double s2 = -1./s1;
+	double m2 = y0 + x0/s1;
+	// incercept coordinates :
+	double x1 = (m2-m1)/(s1-s2);
+	double y1 = (s1*m2 - s2*m1) / (s1-s2);
+
 	double IP = fabs( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
 
 	if (_verbose) std::cout << "IP = " << IP << std::endl;
 
-	// max IP allowed, but one end of the track must be outside of ROI
-	if ( (IP > 30.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) ) remove = true;
+	// if angle between :
+	// A) (x1,y1) -> point of closest approach
+	// O) vtx
+	// B) either end of the cluster line segment
+	// is smaller than the angle between
+	// B) O) and C) the other end of the cluster
+	// then the IP point is ON the cluster line-segment
+	// meaning that the line-segment passes close to the
+	// vertex without actually being correlated
 
-	// max track length > IP and IP above some value
-	if ( (IP > 25.) && ( l_track > IP ) ) remove = true;
+	double OAx = x1-x0;
+	double OAy = y1-y0;
+	double OAm = sqrt( OAx*OAx + OAy*OAy);
+	double OBx = hit_w_v[pt_close_idx] - x0;
+	double OBy = hit_t_v[pt_close_idx] - y0;
+	double OBm = sqrt( OBx*OBx + OBy*OBy);
+	double OCx = hit_w_v[pt_far_idx]   - x0;
+	double OCy = hit_t_v[pt_far_idx]   - y0;
+	double OCm = sqrt( OCx*OCx + OCy*OCy);
 
-	// construct triangle OAB with O = vertex, A & B the two ends of the cluster
-	// angle AOB is the angle on which to cut. If large cluster uncorrelated
-	// with vertex.
-	//std::cout << "O =  [" << x0 << ", " << y0 << std::endl;
-	//std::cout << "A =  [" << hit_w_v[pt_close_idx] << ", " << hit_t_v[pt_close_idx] << std::endl;
-	//std::cout << "B =  [" << hit_w_v[pt_far_idx]   << ", " << hit_t_v[pt_far_idx]   << std::endl;
-	double OAx = hit_w_v[pt_close_idx] - x0;
-	double OAy = hit_t_v[pt_close_idx] - y0;
-	double OAm = sqrt(OAx*OAx + OAy*OAy); // magnitude
-	double OBx = hit_w_v[pt_far_idx]   - x0;
-	double OBy = hit_t_v[pt_far_idx]   - y0;
-	double OBm = sqrt(OBx*OBx + OBy*OBy); // magnitude
-	double cos = (OAy*OBy + OAx*OBx) / (OAm * OBm);
-	//std::cout << "dot product is " << cos << std::endl;
-	double angle = 180. * acos(cos) / 3.14;
-	if (_verbose) std::cout << "angle is " << angle << std::endl;
+	double cosSegment   = (OBy*OCy + OBx*OCx) / (OBm * OCm);
+	double angleSegment = 180. * fabs(acos(cosSegment)) / 3.14;
+	double cosIP        = (OBy*OAy + OBx*OAx) / (OBm * OAm);
+	double angleIP      = 180. * fabs(acos(cosIP)) / 3.14;
 
-	if ( (angle > 80) && (dmin > 15.) && ( (d_close > _roi_radius/2.) || (d_far > _roi_radius/2.) ) )
+	if ( (angleIP < angleSegment) && (IP < 3 * d_close) && (d_close > 5.)) {
+	  //     ( ( lin._local_lin_truncated_avg < _lin_max ) && ( (d_far > _dfar_min) && (d_close > _dclose_min) ) ) ) {
+	  if (_verbose) { std::cout << "\t\t REMOVE" << std::endl; }
 	  remove = true;
-	
-	if ( (angle > 50) && (dmin > 4.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
-	  remove = true;
+	}
 
-	if ( (angle > 35) && (dmin > 10.) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
-	  remove = true;
-
-	if ( (l_track > _roi_radius) && ( (d_close > _roi_radius) || (d_far > _roi_radius) ) )
-	  remove = true;
-	
       }
       
       if (remove){
@@ -209,7 +225,7 @@ namespace larlite {
     return true;
   }
 
-  bool RemoveCosmicTracks::finalize() {
+  bool VertexDistanceCorrelation::finalize() {
 
   
     return true;

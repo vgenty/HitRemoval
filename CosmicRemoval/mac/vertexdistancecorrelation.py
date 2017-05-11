@@ -29,41 +29,28 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("hitremoval_ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("hitremoval.root")
+my_proc.set_output_file("hitremoval_vtxdist.root")
 
 # prepare the various hit removal stages
 
-_hitproducer    = "gaushit"
-_clusproducer   = "pandoraCosmic"
-_vtxproducer    = "mcvertex" #"numuCC_vertex"
-_clusproducer01 = "clus01"
-_clusproducer02 = "clus02"
-_clusproducer03 = "clus03"
+algo = fmwk.VertexDistanceCorrelation()
+algo.setClusterProducer("pandoraCosmic")
+algo.setVertexProducer("mcvertex")
+algo.setVerbose(False)
+algo.setROIRadius(100.)
+algo.setMaxLin(0.1)
+algo.setDFarMin(50.)
+algo.setDCloseMin(10.)
 
-#muon removal
-_trkproducer    = "pandoraNu"
-_hitassproducer = "pandoraCosmicKHitRemoval"
-
-def hitremoval00():
-
-    algo = fmwk.RemoveCosmicTracks()
-    algo.setClusterProducer(_clusproducer)
-    algo.setVertexProducer(_vtxproducer)
-    algo.setVerbose(False)
-    algo.setROIRadius(100.)
-
-    return algo
-
-my_proc.add_process( hitremoval00() )
+my_proc.add_process( algo )
 
 my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
-#my_proc.set_data_to_write(fmwk.data.kMCTrack,  "mcreco"     )
 my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
-my_proc.set_data_to_write(fmwk.data.kVertex,   _vtxproducer )
+my_proc.set_data_to_write(fmwk.data.kVertex,   "mcvertex" )
 
-my_proc.set_data_to_write(fmwk.data.kHit,         _hitproducer    )
-my_proc.set_data_to_write(fmwk.data.kCluster,     _clusproducer   )
-my_proc.set_data_to_write(fmwk.data.kAssociation, _clusproducer   )
+my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"    )
+my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic"   )
+my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic"   )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

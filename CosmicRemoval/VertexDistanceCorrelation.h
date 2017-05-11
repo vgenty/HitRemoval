@@ -1,19 +1,19 @@
 /**
- * \file RemoveDeltaRays.h
+ * \file VertexDistanceCorrelation.h
  *
  * \ingroup Clustering
  * 
- * \brief Class def header for a class RemoveDeltaRays
+ * \brief Class def header for a class VertexDistanceCorrelation
  *
- * @author david
+ * @author david caratelli
  */
 
 /** \addtogroup Clustering
 
     @{*/
 
-#ifndef LARLITE_REMOVEDELTARAYS_H
-#define LARLITE_REMOVEDELTARAYS_H
+#ifndef LARLITE_VERTEXDISTANCECORRELATION_H
+#define LARLITE_VERTEXDISTANCECORRELATION_H
 
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
@@ -22,30 +22,30 @@
 
 namespace larlite {
   /**
-     \class RemoveDeltaRays
+     \class VertexDistanceCorrelation
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveDeltaRays : public ana_base{
+  class VertexDistanceCorrelation : public ana_base{
   
   public:
 
     /// Default constructor
-    RemoveDeltaRays();
+    VertexDistanceCorrelation();
 
     /// Default destructor
-    virtual ~RemoveDeltaRays(){}
+    virtual ~VertexDistanceCorrelation(){}
 
-    /** IMPLEMENT in RemoveDeltaRays.cc!
+    /** IMPLEMENT in VertexDistanceCorrelation.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in RemoveDeltaRays.cc! 
+    /** IMPLEMENT in VertexDistanceCorrelation.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in RemoveDeltaRays.cc! 
+    /** IMPLEMENT in VertexDistanceCorrelation.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
@@ -53,25 +53,25 @@ namespace larlite {
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
 
-    /// set delta-ray distances
-    void setDeltaRayDistMin(double d) { _d_delta_min = d; }
-    void setDeltaRayDistMax(double d) { _d_delta_max = d; }
-    void setMaxDeltaHits(int n) { _max_delta_hits = n; }
+    /// set ROI size (cm away from vtx)
+    void setROIRadius(double r) { _roi_radius = r; }
+
+    /// set max linearity for cluster
+    void setMaxLin(double l) { _lin_max = l; }
+
+    /// minimum "far" and "close" distance
+    void setDFarMin  (double d) { _dfar_min = d;   }
+    void setDCloseMin(double d) { _dclose_min = d; }
 
     /// Set Producers
     void setClusterProducer(std::string s) { _clusProducer = s; }
+    void setVertexProducer (std::string s) { _vtxProducer  = s; }
 
   protected:
 
-    /// function that determines if cluster is a delta-rays
-    bool DeltaRay(const std::vector<unsigned int>& muon,
-		  const std::vector<unsigned int>& deltaray);
-
-    // distance between hits
-    double _distSq_(const larlite::hit& h1, const larlite::hit& h2);
-
-    // keep track of event hits
-    event_hit* _ev_hit;
+    /// vertex coordinates
+    std::vector<double> _vtx_w_cm;
+    std::vector<double> _vtx_t_cm;
 
     /// verbosity flag
     bool _verbose;
@@ -81,10 +81,15 @@ namespace larlite {
 
     /// Producers
     std::string _clusProducer;
+    std::string _vtxProducer;
 
-    // minimum & max dist to delta-ray
-    double _d_delta_min, _d_delta_max;
-    int _max_delta_hits;
+    /// ROI radius
+    double _roi_radius;
+    /// max lin
+    double _lin_max;
+    /// min dfar / dclose
+    double _dfar_min;
+    double _dclose_min;
     
   };
 }

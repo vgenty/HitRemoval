@@ -12,6 +12,8 @@
 #pragma link C++ class larlite::CosmicRemoval+;
 #pragma link C++ class larlite::RemoveCosmicTracks+;
 #pragma link C++ class larlite::RemoveDeltaRays+;
+#pragma link C++ class larlite::VertexSlopeCorrelation+;
+#pragma link C++ class larlite::VertexDistanceCorrelation+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

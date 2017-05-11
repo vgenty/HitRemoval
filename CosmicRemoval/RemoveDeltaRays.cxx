@@ -15,12 +15,8 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _clusProducer = "";
-    _vtxProducer  = "";
 
     _d_delta_min = _d_delta_max = 0.;
-    
-    _vtx_w_cm = {0,0,0};
-    _vtx_t_cm = {0,0,0};
     
   }
 
@@ -34,32 +30,19 @@ namespace larlite {
   
   bool RemoveDeltaRays::analyze(storage_manager* storage) {
 
-    auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
 
     _ev_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), _ev_hit, ev_clus->name());
 
     if (!_ev_hit){
-      std::cout << "No hits!" << std::endl;
+      print(larlite::msg::kWARNING,__FUNCTION__,"no hits");
       return false;
     }
 
     // keep track of all clusters identified as delta-rays
     std::vector<size_t> delta_ray_v;
     
-    // get vertex position on each plane
-    if ( (ev_vtx->size() == 1) ){
-      auto const& vtx = ev_vtx->at(0);
-      auto geoH = larutil::GeometryHelper::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
-      for (size_t pl = 0; pl < 3; pl++){
-	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
-	_vtx_w_cm[pl] = pt.w;
-	_vtx_t_cm[pl] = pt.t + 800 * _time2cm;
-      }
-    }
-
     // loop through clusters and identify those removed
     // by cosmic removal, per plane
     std::vector< std::vector<size_t> > cosmic_clus_v(3,std::vector<size_t>());
@@ -97,7 +80,7 @@ namespace larlite {
       if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) continue;
 
       // if too many hits -> remove
-      if (hit_idx_v.size() > 20) continue;
+      if (hit_idx_v.size() > _max_delta_hits) continue;
       
       // compare this delta-ray to all removed muons in the plane
       for (auto const& muidx : cosmic_clus_v[pl]){
