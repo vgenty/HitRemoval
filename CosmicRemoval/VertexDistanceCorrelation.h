@@ -69,6 +69,8 @@ namespace larlite {
 
   protected:
 
+    bool loadVertex(event_vertex *ev_vtx);
+
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;
     std::vector<double> _vtx_t_cm;

@@ -62,9 +62,12 @@ algo.setDCloseMin(10.)
 
 algo = fmwk.RemoveDeltaRays()
 algo.setClusterProducer("pandoraCosmic")
+algo.setVertexProducer("mcvertex")
 algo.setVerbose(False)
 algo.setDeltaRayDistMin(1.0);
-algo.setDeltaRayDistMax(4.5);
+algo.setDeltaRayDistMax(10.0);
+algo.setMaxDeltaHits(50);
+algo.setROI(120.)
 
 #my_proc.add_process( algo )
 

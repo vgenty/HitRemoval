@@ -55,7 +55,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,100)
 
 sys.exit()
 

@@ -42,23 +42,12 @@ namespace larlite {
       print(larlite::msg::kWARNING,__FUNCTION__,"no hits");
       return false;
     }
-    
-    // get vertex position on each plane
-    if ( (ev_vtx->size() == 1) ){
-      auto const& vtx = ev_vtx->at(0);
-      auto geoH = larutil::GeometryHelper::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
-      for (size_t pl = 0; pl < 3; pl++){
-	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
-	_vtx_w_cm[pl] = pt.w;
-	_vtx_t_cm[pl] = pt.t + 800 * _time2cm;
-      }
-    }
-    else {
-      print(larlite::msg::kERROR,__FUNCTION__,"no vertex found!");
+
+    if (loadVertex(ev_vtx) == false) {
+      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
-
+    
     // loop trhough each cluster
     // find the "start" and "end" point of the cluster
     // if both outside of the ROI
@@ -228,6 +217,30 @@ namespace larlite {
   bool VertexDistanceCorrelation::finalize() {
 
   
+    return true;
+  }
+
+
+  bool VertexDistanceCorrelation::loadVertex(event_vertex* ev_vtx) {
+    
+    if (ev_vtx->size() != 1) return false;
+    
+    // get vertex position on each plane
+    if ( (ev_vtx->size() == 1) ){
+      auto const& vtx = ev_vtx->at(0);
+      auto geoH = larutil::GeometryHelper::GetME();
+      auto geom = larutil::Geometry::GetME();
+      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+      for (size_t pl = 0; pl < 3; pl++){
+	double *origin;
+	origin = new double[3];
+	geom->PlaneOriginVtx(pl,origin);
+	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
+	_vtx_w_cm[pl] = pt.w;
+	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
+      }
+    }    
+
     return true;
   }
 
