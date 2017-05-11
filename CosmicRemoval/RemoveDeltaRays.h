@@ -57,11 +57,19 @@ namespace larlite {
     void setDeltaRayDistMin(double d) { _d_delta_min = d; }
     void setDeltaRayDistMax(double d) { _d_delta_max = d; }
     void setMaxDeltaHits(int n) { _max_delta_hits = n; }
+    void setROI(double r) { _roi = r; }
 
     /// Set Producers
     void setClusterProducer(std::string s) { _clusProducer = s; }
+    void setVertexProducer(std::string s) { _vertexProducer = s; }
 
   protected:
+    
+    bool loadVertex(event_vertex *ev_vtx);
+
+    /// vertex coordinates
+    std::vector<double> _vtx_w_cm;
+    std::vector<double> _vtx_t_cm;
 
     /// function that determines if cluster is a delta-rays
     bool DeltaRay(const std::vector<unsigned int>& muon,
@@ -81,10 +89,12 @@ namespace larlite {
 
     /// Producers
     std::string _clusProducer;
+    std::string _vertexProducer;
 
     // minimum & max dist to delta-ray
     double _d_delta_min, _d_delta_max;
     int _max_delta_hits;
+    double _roi;
     
   };
 }

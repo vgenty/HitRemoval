@@ -15,8 +15,12 @@ namespace larlite {
     _fout        = 0;
     _verbose     = false;
     _clusProducer = "";
+    _vertexProducer = "";
 
     _d_delta_min = _d_delta_max = 0.;
+
+    _vtx_w_cm = {0,0,0};
+    _vtx_t_cm = {0,0,0};
     
   }
 
@@ -31,12 +35,18 @@ namespace larlite {
   bool RemoveDeltaRays::analyze(storage_manager* storage) {
 
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
+    auto ev_vtx  = storage->get_data<event_vertex> (_vertexProducer);
 
     _ev_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), _ev_hit, ev_clus->name());
 
     if (!_ev_hit){
       print(larlite::msg::kWARNING,__FUNCTION__,"no hits");
+      return false;
+    }
+
+    if (loadVertex(ev_vtx) == false) {
+      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
 
@@ -53,10 +63,8 @@ namespace larlite {
       
       int pl = _ev_hit->at(hit_idx_v[0]).WireID().Plane;
 
-      // tmp
-      //if ( (pl != 1) || (hit_idx_v.size() != 358) ) continue;
-
-      if (hit_idx_v.size() == 0) continue;
+      // only consider as cosmics the tracks with more hits than the max allowed for a delta-ray
+      if (hit_idx_v.size() < _max_delta_hits) continue;
 
       // if negative GoF -> removed.
       if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 )
@@ -81,6 +89,14 @@ namespace larlite {
 
       // if too many hits -> remove
       if (hit_idx_v.size() > _max_delta_hits) continue;
+
+      // if out of ROI, ignore this delta-ray (OK not to remove)
+      auto const& hit0 = _ev_hit->at(hit_idx_v.at(0));
+      double wcm = hit0.WireID().Wire * _wire2cm;
+      double tcm = hit0.PeakTime() * _time2cm;
+      double dvtx = sqrt( (wcm - _vtx_w_cm[pl]) * (wcm - _vtx_w_cm[pl]) +
+			  (tcm - _vtx_t_cm[pl]) * (tcm - _vtx_t_cm[pl]) );
+      if (dvtx > _roi) continue;
       
       // compare this delta-ray to all removed muons in the plane
       for (auto const& muidx : cosmic_clus_v[pl]){
@@ -170,7 +186,31 @@ namespace larlite {
     
     return (t1-t2)*(t1-t2) + (w1-w2)*(w1-w2);
   }
-      
+
+  
+  bool RemoveDeltaRays::loadVertex(event_vertex* ev_vtx) {
+    
+    if (ev_vtx->size() != 1) return false;
+    
+    // get vertex position on each plane
+    if ( (ev_vtx->size() == 1) ){
+      auto const& vtx = ev_vtx->at(0);
+      auto geoH = larutil::GeometryHelper::GetME();
+      auto geom = larutil::Geometry::GetME();
+      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+      for (size_t pl = 0; pl < 3; pl++){
+	double *origin;
+	origin = new double[3];
+	geom->PlaneOriginVtx(pl,origin);
+	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
+	_vtx_w_cm[pl] = pt.w;
+	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
+      }
+    }    
+
+    return true;
+  }
+  
 
 }
 #endif
