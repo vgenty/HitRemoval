@@ -1,75 +1,72 @@
 /**
- * \file RemoveHitsNearVtx.h
+ * \file ROIRemoval.h
  *
- * \ingroup Clusterer
+ * \ingroup Clustering
  * 
- * \brief Class def header for a class RemoveHitsNearVtx
+ * \brief Class def header for a class ROIRemoval
  *
  * @author david caratelli
  */
 
-/** \addtogroup Clusterer
+/** \addtogroup Clustering
 
     @{*/
 
-#ifndef LARLITE_REMOVEHITSNEARVERTEX_H
-#define LARLITE_REMOVEHITSNEARVERTEX_H
+#ifndef LARLITE_ROIREMOVAL_H
+#define LARLITE_ROIREMOVAL_H
 
 #include "Analysis/ana_base.h"
+#include "DataFormat/hit.h"
 
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
 
-#include <map>
-
 namespace larlite {
   /**
-     \class RemoveHitsNearVtx
+     \class ROIRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveHitsNearVtx : public ana_base, public HitRemovalBase {
+  class ROIRemoval : public ana_base, HitRemovalBase {
   
   public:
 
     /// Default constructor
-    RemoveHitsNearVtx();
+    ROIRemoval();
 
     /// Default destructor
-    virtual ~RemoveHitsNearVtx(){}
+    virtual ~ROIRemoval(){}
 
-    /** IMPLEMENT in RemoveHitsNearVtx.cc!
+    /** IMPLEMENT in ROIRemoval.cc!
         Initialization method to be called before the analysis event loop.
     */ 
     virtual bool initialize();
 
-    /** IMPLEMENT in RemoveHitsNearVtx.cc! 
+    /** IMPLEMENT in ROIRemoval.cc! 
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
 
-    /** IMPLEMENT in RemoveHitsNearVtx.cc! 
+    /** IMPLEMENT in ROIRemoval.cc! 
         Finalize method to be called after all events processed.
     */
     virtual bool finalize();
 
+    void setROI(double r) { _roi = r; }
 
-    /// vertex buffer region
-    void setVtxRadius(double r) { _vtx_rad = r; }
-    
     /// Set Producers
-    void setHitProducer    (std::string s) { _hitProducer     = s; }
-    void setVertexProducer (std::string s) { _vertexProducer  = s; }
+    void setClusterProducer(std::string s) { _clusProducer = s; }
+    void setVertexProducer(std::string s) { _vertexProducer = s; }
 
   protected:
-
-    /// ROI radius
-    double _vtx_rad;
     
-    /// producers
-    std::string _hitProducer;
+    /// Producers
+    std::string _clusProducer;
     std::string _vertexProducer;
 
+    // ROI box
+    double _roi;
+    
   };
 }
 #endif

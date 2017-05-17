@@ -3,18 +3,9 @@
 
 #include "LinearRemoval.h"
 
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-
-#include "DataFormat/hit.h"
-#include "DataFormat/cluster.h"
-
 namespace larlite {
 
   bool LinearRemoval::initialize() {
-
-    _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
-    _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
 
     return true;
   }

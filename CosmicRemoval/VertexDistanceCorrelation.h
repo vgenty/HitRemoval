@@ -18,6 +18,8 @@
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
 
+#include "HitRemovalBase.h"
+
 #include "TwoDimTools/Linearity.h"
 
 namespace larlite {
@@ -25,7 +27,7 @@ namespace larlite {
      \class VertexDistanceCorrelation
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexDistanceCorrelation : public ana_base{
+  class VertexDistanceCorrelation : public ana_base, HitRemovalBase {
   
   public:
 
@@ -50,9 +52,6 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-
     /// set ROI size (cm away from vtx)
     void setROIRadius(double r) { _roi_radius = r; }
 
@@ -68,18 +67,6 @@ namespace larlite {
     void setVertexProducer (std::string s) { _vtxProducer  = s; }
 
   protected:
-
-    bool loadVertex(event_vertex *ev_vtx);
-
-    /// vertex coordinates
-    std::vector<double> _vtx_w_cm;
-    std::vector<double> _vtx_t_cm;
-
-    /// verbosity flag
-    bool _verbose;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
 
     /// Producers
     std::string _clusProducer;

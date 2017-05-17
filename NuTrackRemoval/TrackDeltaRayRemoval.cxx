@@ -23,9 +23,6 @@ namespace larlite {
 
   bool TrackDeltaRayRemoval::initialize() {
 
-    _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
-    _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
-
     if ( _clusProducer == "" ) {
       print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
       return false;

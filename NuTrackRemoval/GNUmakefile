@@ -14,7 +14,7 @@ OBJECTS = $(SOURCES:.cxx=.o)
 INCFLAGS  = -I.                       #Include itself
 INCFLAGS += $(shell larlite-config --includes)
 INCFLAGS += $(shell basictool-config --includes)
-INCFLAGS += -I$(LARLITE_USERDEVDIR)
+INCFLAGS += -I$(LARLITE_USERDEVDIR)/HitRemoval/Base
 
 # platform-specific options
 OSNAME          = $(shell uname -s)
@@ -27,6 +27,7 @@ include $(LARLITE_BASEDIR)/Makefile/Makefile.${OSNAME}
 # call the common GNUmakefile
 LDFLAGS += $(shell larlite-config --libs)
 LDFLAGS += $(shell basictool-config --libs)
+LDFLAGS += -L$(LARLITE_LIBDIR) -lHitRemoval_Base
 include $(LARLITE_BASEDIR)/Makefile/GNUmakefile.CORE
 
 

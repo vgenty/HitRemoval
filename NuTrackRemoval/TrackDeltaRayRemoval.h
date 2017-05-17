@@ -16,16 +16,17 @@
 #define LARLITE_TRACKDELTARAYREMOVAL_H
 
 #include "Analysis/ana_base.h"
-#include "DataFormat/hit.h"
 
 #include "TwoDimTools/Linearity.h"
+
+#include "HitRemovalBase.h"
 
 namespace larlite {
   /**
      \class TrackDeltaRayRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class TrackDeltaRayRemoval : public ana_base{
+  class TrackDeltaRayRemoval : public ana_base, public HitRemovalBase {
   
   public:
 
@@ -50,9 +51,6 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-
     /// set delta-ray distances
     void setDeltaRayDistMin(double d) { _d_delta_min = d; }
     void setDeltaRayDistMax(double d) { _d_delta_max = d; }
@@ -73,12 +71,6 @@ namespace larlite {
 
     // keep track of event hits
     event_hit* _ev_hit;
-
-    /// verbosity flag
-    bool _verbose;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
 
     /// Producers
     std::string _clusProducer;

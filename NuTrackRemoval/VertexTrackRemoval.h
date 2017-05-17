@@ -17,9 +17,9 @@
 
 #include "Analysis/ana_base.h"
 
-#include "DataFormat/vertex.h"
-
 #include "TwoDimTools/Linearity.h"
+
+#include "HitRemovalBase.h"
 
 #include <map>
 
@@ -28,7 +28,7 @@ namespace larlite {
      \class VertexTrackRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexTrackRemoval : public ana_base{
+  class VertexTrackRemoval : public ana_base, public HitRemovalBase {
   
   public:
 
@@ -75,8 +75,6 @@ namespace larlite {
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
   protected:
-
-    bool loadVertex(event_vertex* ev_vtx);
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;

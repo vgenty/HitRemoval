@@ -17,7 +17,7 @@
 
 #include "Analysis/ana_base.h"
 
-#include "DataFormat/vertex.h"
+#include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
 
@@ -26,7 +26,7 @@ namespace larlite {
      \class LinearRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class LinearRemoval : public ana_base{
+  class LinearRemoval : public ana_base, HitRemovalBase {
   
   public:
 
@@ -69,9 +69,6 @@ namespace larlite {
     std::vector<int>    _min_n_hits_v;
     // maximum ssv allowed
     double _ssv;
-    
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
     
   };
 }

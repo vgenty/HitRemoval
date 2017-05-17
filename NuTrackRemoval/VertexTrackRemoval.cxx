@@ -3,12 +3,6 @@
 
 #include "VertexTrackRemoval.h"
 
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-
-#include "DataFormat/cluster.h"
-#include "DataFormat/hit.h"
-
 namespace larlite {
 
   VertexTrackRemoval::VertexTrackRemoval()  {
@@ -16,29 +10,15 @@ namespace larlite {
     _name        = "VertexTrackRemoval";
     _fout        = 0;
     
-    _verbose     = false;
-    _debug       = false;
-    
     _clusterProducer = "";
     _vertexProducer  = "";
     
     _max_lin_v = {0.0};
     _min_n_hits_v = {0};
 
-    _vtx_w_cm = {0,0,0};
-    _vtx_t_cm = {0,0,0};
-
   }
 
   bool VertexTrackRemoval::initialize() {
-
-    _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
-    _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
-
-    std::cout << "********************************" << std::endl;
-    std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
-    std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
-    std::cout << "********************************" << std::endl;
 
     // make sure _max_lin_v and _min_n_his_v have the same size
     if (_max_lin_v.size() != _min_n_hits_v.size()){
@@ -93,11 +73,6 @@ namespace larlite {
       return false;
     }
     
-    if (loadVertex(ev_vtx) == false) {
-      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
-      return false;
-    }
-
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
@@ -192,29 +167,6 @@ namespace larlite {
   }
 
   bool VertexTrackRemoval::finalize() {
-
-    return true;
-  }
-
-  bool VertexTrackRemoval::loadVertex(event_vertex* ev_vtx) {
-
-    if (ev_vtx->size() != 1) return false;
-    
-    // get vertex position on each plane
-    if ( (ev_vtx->size() == 1) ){
-      auto const& vtx = ev_vtx->at(0);
-      auto geoH = larutil::GeometryHelper::GetME();
-      auto geom = larutil::Geometry::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
-      for (size_t pl = 0; pl < 3; pl++){
-	double *origin;
-	origin = new double[3];
-	geom->PlaneOriginVtx(pl,origin);
-	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
-	_vtx_w_cm[pl] = pt.w;
-	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
-      }
-    }    
 
     return true;
   }

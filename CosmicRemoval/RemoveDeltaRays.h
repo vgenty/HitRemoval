@@ -18,6 +18,8 @@
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
 
+#include "HitRemovalBase.h"
+
 #include "TwoDimTools/Linearity.h"
 
 namespace larlite {
@@ -25,7 +27,7 @@ namespace larlite {
      \class RemoveDeltaRays
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveDeltaRays : public ana_base{
+  class RemoveDeltaRays : public ana_base, HitRemovalBase {
   
   public:
 
@@ -50,9 +52,6 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-
     /// set delta-ray distances
     void setDeltaRayDistMin(double d) { _d_delta_min = d; }
     void setDeltaRayDistMax(double d) { _d_delta_max = d; }
@@ -65,12 +64,6 @@ namespace larlite {
 
   protected:
     
-    bool loadVertex(event_vertex *ev_vtx);
-
-    /// vertex coordinates
-    std::vector<double> _vtx_w_cm;
-    std::vector<double> _vtx_t_cm;
-
     /// function that determines if cluster is a delta-rays
     bool DeltaRay(const std::vector<unsigned int>& muon,
 		  const std::vector<unsigned int>& deltaray);
@@ -80,12 +73,6 @@ namespace larlite {
 
     // keep track of event hits
     event_hit* _ev_hit;
-
-    /// verbosity flag
-    bool _verbose;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
 
     /// Producers
     std::string _clusProducer;

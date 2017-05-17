@@ -6,9 +6,6 @@
 #include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 
-#include "DataFormat/cluster.h"
-#include "DataFormat/vertex.h"
-
 namespace larlite {
 
   RemoveHitsNearVtx::RemoveHitsNearVtx()  {
@@ -16,21 +13,9 @@ namespace larlite {
     _name        = "RemoveHitsNearVtx";
     _fout        = 0;
     
-    _verbose     = false;
-    _debug       = false;
-    
-    _hitProducer     = "";
-    _vertexProducer  = "";
-    
-    _vtx_w_cm = {0,0,0};
-    _vtx_t_cm = {0,0,0};
-
   }
 
   bool RemoveHitsNearVtx::initialize() {
-
-    _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
-    _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
 
     std::cout << "********************************" << std::endl;
     std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
@@ -100,29 +85,6 @@ namespace larlite {
     return true;
   }
 
-
-  bool RemoveHitsNearVtx::loadVertex(event_vertex* ev_vtx) {
-
-    if (ev_vtx->size() != 1) return false;
-    
-    // get vertex position on each plane
-    if ( (ev_vtx->size() == 1) ){
-      auto const& vtx = ev_vtx->at(0);
-      auto geoH = larutil::GeometryHelper::GetME();
-      auto geom = larutil::Geometry::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
-      for (size_t pl = 0; pl < 3; pl++){
-	double *origin;
-	origin = new double[3];
-	geom->PlaneOriginVtx(pl,origin);
-	auto const& pt = geoH->Point_3Dto2D(xyz,pl);
-	_vtx_w_cm[pl] = pt.w;
-	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
-      }
-    }    
-
-    return true;
-  }
 
 }
 #endif

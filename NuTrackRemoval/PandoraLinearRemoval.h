@@ -17,8 +17,7 @@
 
 #include "Analysis/ana_base.h"
 
-#include "DataFormat/hit.h"
-#include "DataFormat/vertex.h"
+#include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
 
@@ -29,7 +28,7 @@ namespace larlite {
      \class PandoraLinearRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class PandoraLinearRemoval : public ana_base{
+  class PandoraLinearRemoval : public ana_base, public HitRemovalBase{
   
   public:
 
@@ -59,11 +58,6 @@ namespace larlite {
       _pts_y_v.push_back(lin);
     }
     
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-    void setDebug  (bool on) { _debug   = on; }
-    
-
     /// set max distance pandora cluster can have to vertex
     /// in order to be considered for linear removal at this
     /// stage.
@@ -85,13 +79,7 @@ namespace larlite {
 
   protected:
 
-    bool loadVertex(event_vertex *ev_vtx);
-
     bool lineCut(const double& x, const double&y);
-
-    /// vertex coordinates
-    std::vector<double> _vtx_w_cm;
-    std::vector<double> _vtx_t_cm;
 
     // slope separation value
     double _slope_min;
@@ -116,14 +104,6 @@ namespace larlite {
     /// ROI radius
     double _roi_rad;
     
-    /// verbosity flag
-    bool _verbose;
-    /// debug flag
-    bool _debug;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
-
     /// producers
     std::string _clusterProducer;
     std::string _vertexProducer;

@@ -5,7 +5,7 @@
  * 
  * \brief Class def header for a class VertexSlopeCorrelation
  *
- * @author david
+ * @author david caratelli
  */
 
 /** \addtogroup Clustering
@@ -18,6 +18,8 @@
 #include "Analysis/ana_base.h"
 #include "DataFormat/hit.h"
 
+#include "HitRemovalBase.h"
+
 #include "TwoDimTools/Linearity.h"
 
 namespace larlite {
@@ -25,7 +27,7 @@ namespace larlite {
      \class VertexSlopeCorrelation
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexSlopeCorrelation : public ana_base{
+  class VertexSlopeCorrelation : public ana_base, HitRemovalBase {
   
   public:
 
@@ -50,9 +52,6 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-    
     // set max IP
     void setMaxIP(double IP) { _IP_max = IP; }
     // set min number of hits for cluster to be considered
@@ -66,18 +65,6 @@ namespace larlite {
 
   protected:
 
-    bool loadVertex(event_vertex *ev_vtx);
-
-    /// vertex coordinates
-    std::vector<double> _vtx_w_cm;
-    std::vector<double> _vtx_t_cm;
-
-    /// verbosity flag
-    bool _verbose;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
-
     /// Producers
     std::string _clusProducer;
     std::string _vtxProducer;
@@ -85,7 +72,10 @@ namespace larlite {
     double _IP_max;
     int _min_nhits;
     double _roi_radius;
-    
+
+    double _ip;
+    int    _nhits;
+
   };
 }
 #endif
