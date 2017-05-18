@@ -26,6 +26,7 @@ namespace larlite {
     _vtx_t_cm = {0,0,0};
     _tick_min = 0;
     _tick_max = 9600;
+    _roi_radius = 1000;
 
   }
 
@@ -428,14 +429,18 @@ namespace larlite {
       double w = hit.WireID().Wire*_wire2cm;
 
       // if hit too close to vertex -> ignore
+      // if hit out of ROI -> ignore
       if ( (_vtxProducer != "") && (_useVtx == true) ){
+	double wcm = fabs(t - _vtx_t_cm[plane]);
+	double tcm = fabs(w - _vtx_w_cm[plane]);
 	double d = sqrt( ( (t - _vtx_t_cm[plane]) * (t - _vtx_t_cm[plane]) ) +
 			 ( (w - _vtx_w_cm[plane]) * (w - _vtx_w_cm[plane]) ) );
-	if (d < _vtx_radius){
+	if (d < _vtx_radius)
 	  continue;
-	}
+	if ( (wcm > _roi_radius) or (tcm > _roi_radius) )
+	  continue;
       }
-      
+
       // map is (i,j) -> hit list
       // i : ith bin in wire of some width
       // j : jth bin in time of some width

@@ -67,6 +67,8 @@ namespace larlite {
     
     /// set vertex radius to avoid
     void setVtxRadius(double r) { _vtx_radius = r; }
+    /// set ROI to use
+    void setROIRadius(double r) { _roi_radius = r; }
     /// use vertex?
     void setUseVertex(bool on) { _useVtx = on; }
     /// cut hits based on their fit RMS [ unit is time-ticks ]
@@ -118,6 +120,8 @@ namespace larlite {
 
     /// vertex radius to avoid
     double _vtx_radius;
+    /// roi radius
+    double _roi_radius;
 
     /// use vertex?
     bool _useVtx;
