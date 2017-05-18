@@ -66,6 +66,8 @@ namespace larlite {
 
     }// for all clusters
 
+    if (_verbose) std::cout << "there are " << cosmic_clus_v[2].size() << " cosmic muons on plane 2" << std::endl;
+    
     // now for small clusters that have not been removed
     // identify if they are close to a removed cosmic
     // cluster and delta-ray like

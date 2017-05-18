@@ -40,7 +40,7 @@ namespace larlite {
     // loop through all clusters
     //if cluster has hits out of ROI -> remove cluster
 
-    std::cout << "looping through " << ass_cluster_hit_v.size() << " clusters" << std::endl;
+    if (_verbose) std::cout << "looping through " << ass_cluster_hit_v.size() << " clusters" << std::endl;
     
     for (size_t i=0; i < ass_cluster_hit_v.size(); i++) {
 
@@ -48,7 +48,7 @@ namespace larlite {
       
       auto hit_idx_v = ass_cluster_hit_v[i];
 
-      std::cout << "new cluster of size " << hit_idx_v.size() << std::endl;
+      if (_verbose) std::cout << "new cluster of size " << hit_idx_v.size() << std::endl;
 
       int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
 
@@ -61,7 +61,7 @@ namespace larlite {
 	double wcm = fabs( hit.WireID().Wire * _wire2cm - _vtx_w_cm[pl] );
 	double tcm = fabs( hit.PeakTime() * _time2cm - _vtx_t_cm[pl] );
 
-	std::cout << "wcm = " << wcm << "\t tcm = " << tcm << std::endl;
+	if (_verbose) std::cout << "wcm = " << wcm << "\t tcm = " << tcm << std::endl;
 
 	if ( (wcm > _roi) || (tcm > _roi) ) {
 	  OutOfROI = true;

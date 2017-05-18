@@ -15,6 +15,7 @@
 #pragma link C++ class larlite::ROIRemoval+;
 #pragma link C++ class larlite::VertexSlopeCorrelation+;
 #pragma link C++ class larlite::VertexDistanceCorrelation+;
+#pragma link C++ class larlite::VertexAngleCorrelation+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 

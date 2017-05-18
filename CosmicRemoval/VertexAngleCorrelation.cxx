@@ -1,7 +1,7 @@
-#ifndef LARLITE_VERTEXDISTANCECORRELATION_CXX
-#define LARLITE_VERTEXDISTANCECORRELATION_CXX
+#ifndef LARLITE_VERTEXANGLECORRELATION_CXX
+#define LARLITE_VERTEXANGLECORRELATION_CXX
 
-#include "VertexDistanceCorrelation.h"
+#include "VertexAngleCorrelation.h"
 #include "LArUtil/GeometryHelper.h"
 #include "LArUtil/Geometry.h"
 #include "DataFormat/cluster.h"
@@ -9,9 +9,9 @@
 
 namespace larlite {
 
-  VertexDistanceCorrelation::VertexDistanceCorrelation() {
+  VertexAngleCorrelation::VertexAngleCorrelation() {
 
-    _name        = "VertexDistanceCorrelation";
+    _name        = "VertexAngleCorrelation";
     _fout        = 0;
     _verbose     = false;
     _clusProducer = "";
@@ -19,12 +19,18 @@ namespace larlite {
     
   }
 
-  bool VertexDistanceCorrelation::initialize() {
+  bool VertexAngleCorrelation::initialize() {
+
+    if (_tree) delete _tree;
+    _tree = new TTree(_name.c_str(),_name.c_str());
+    _tree->Branch("_nhits",&_nhits,"nhits/I");
+    _tree->Branch("_ip",&_ip,"ip/D");
+    _tree->Branch("_angle",&_angle,"angle/D");
 
     return true;
   }
   
-  bool VertexDistanceCorrelation::analyze(storage_manager* storage) {
+  bool VertexAngleCorrelation::analyze(storage_manager* storage) {
 
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
@@ -161,33 +167,28 @@ namespace larlite {
 
 	if (_verbose) std::cout << "IP = " << IP << std::endl;
 
-	// if angle between :
-	// A) (x1,y1) -> point of closest approach
-	// O) vtx
-	// B) either end of the cluster line segment
-	// is smaller than the angle between
-	// B) O) and C) the other end of the cluster
-	// then the IP point is ON the cluster line-segment
-	// meaning that the line-segment passes close to the
-	// vertex without actually being correlated
+	// measure angle between :
+	// O) vertex
+	// A) one end of cluster
+	// B) other end of cluster
 
-	double OAx = x1-x0;
-	double OAy = y1-y0;
+	double OAx = hit_w_v[pt_far_idx] - x0;
+	double OAy = hit_t_v[pt_far_idx] - y0;
 	double OAm = sqrt( OAx*OAx + OAy*OAy);
 	double OBx = hit_w_v[pt_close_idx] - x0;
 	double OBy = hit_t_v[pt_close_idx] - y0;
 	double OBm = sqrt( OBx*OBx + OBy*OBy);
-	double OCx = hit_w_v[pt_far_idx]   - x0;
-	double OCy = hit_t_v[pt_far_idx]   - y0;
-	double OCm = sqrt( OCx*OCx + OCy*OCy);
 
-	double cosSegment   = (OBy*OCy + OBx*OCx) / (OBm * OCm);
+	double cosSegment   = (OBy*OAy + OBx*OAx) / (OBm * OAm);
 	double angleSegment = 180. * fabs(acos(cosSegment)) / 3.14;
-	double cosIP        = (OBy*OAy + OBx*OAx) / (OBm * OAm);
-	double angleIP      = 180. * fabs(acos(cosIP)) / 3.14;
 
-	if ( (angleIP < angleSegment) && (IP < 3 * d_close) && (d_close > 5.)) {
-	  //     ( ( lin._local_lin_truncated_avg < _lin_max ) && ( (d_far > _dfar_min) && (d_close > _dclose_min) ) ) ) {
+	_ip = IP;
+	_angle = angleSegment;
+	_nhits = hit_w_v.size();
+
+	_tree->Fill();
+
+	if ( (d_close > 5.)) {
 	  if (_verbose) { std::cout << "\t\t REMOVE" << std::endl; }
 	  remove = true;
 	}
@@ -205,8 +206,10 @@ namespace larlite {
     return true;
   }
 
-  bool VertexDistanceCorrelation::finalize() {
+  bool VertexAngleCorrelation::finalize() {
 
+    _fout->cd();
+    _tree->Write();
   
     return true;
   }

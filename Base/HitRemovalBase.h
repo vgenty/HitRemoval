@@ -49,6 +49,9 @@ namespace larlite {
 
   protected:
 
+    std::vector<unsigned int> AvailableClusterIndices(const larlite::event_hit* ev_hit,
+						      const std::vector< std::vector<unsigned int> >& clus_idx_v);
+
     bool loadVertex(event_vertex *ev_vtx);
 
     /// vertex coordinates

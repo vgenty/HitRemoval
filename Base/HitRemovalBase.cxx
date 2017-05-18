@@ -40,6 +40,29 @@ namespace larlite {
     return true;
   }
 
+  std::vector<unsigned int> HitRemovalBase::AvailableClusterIndices(const larlite::event_hit* ev_hit,
+								    const std::vector< std::vector<unsigned int> >& clus_idx_v)
+
+  {
+
+    std::vector<unsigned int> return_indices;
+    
+    // assumes that 1st GoodnessOfFit value is indicative of entire cluster
+
+    for (size_t i=0; i < clus_idx_v.size(); i++) {
+
+      auto idx_v = clus_idx_v.at(i);
+    
+      if (idx_v.size() == 0) continue;
+      
+      if (ev_hit->at(idx_v.at(0)).GoodnessOfFit() > 0)
+	return_indices.push_back( i );
+      
+    }// for all clustrs
+    
+    return return_indices;
+  }
+
 }
 
 #endif
