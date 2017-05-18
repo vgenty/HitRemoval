@@ -33,30 +33,37 @@ my_proc.set_output_file("cosmicremoval.root")
 
 # prepare the various hit removal stages
 
+# ROI REMOVAL
+algo = fmwk.ROIRemoval()
+algo.setClusterProducer("pandoraCosmic")
+algo.setVertexProducer("mcvertex")
+algo.setVerbose(False)
+algo.setROI(100.)
+
+my_proc.add_process( algo )
+
 # VTX SLOPE CORRELATION REMOVAL
 
 algo = fmwk.VertexSlopeCorrelation()
 algo.setClusterProducer("pandoraCosmic")
 algo.setVertexProducer("mcvertex")
 algo.setVerbose(False)
-algo.setMaxIP(10.)
+algo.setCutFunction(80,-10,30,5)
 algo.setMinNHits(10)
 algo.setROIRadius(100.)
 
 my_proc.add_process( algo )
 
-# VTX DISTANCE CORRELATION REMOVAL
+# VTX ANGLE CORRELATION REMOVAL
 
-algo = fmwk.VertexDistanceCorrelation()
+algo = fmwk.VertexAngleCorrelation()
 algo.setClusterProducer("pandoraCosmic")
 algo.setVertexProducer("mcvertex")
 algo.setVerbose(False)
-algo.setROIRadius(100.)
-algo.setMaxLin(0.1)
-algo.setDFarMin(50.)
-algo.setDCloseMin(10.)
+algo.setCutFunction(100,-5,15,5)
+algo.setMaxAngle(160.)
 
-#my_proc.add_process( algo )
+my_proc.add_process( algo )
 
 # DELTA RAY REMOVAL
 
@@ -69,7 +76,7 @@ algo.setDeltaRayDistMax(10.0);
 algo.setMaxDeltaHits(50);
 algo.setROI(120.)
 
-#my_proc.add_process( algo )
+my_proc.add_process( algo )
 
 my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
 my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )

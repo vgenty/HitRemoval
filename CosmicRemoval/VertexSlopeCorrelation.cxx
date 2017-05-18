@@ -47,13 +47,11 @@ namespace larlite {
       return false;
     }
 
-    // loop trhough each cluster
-    // find the "start" and "end" point of the cluster
-    // if both outside of the ROI
-    // remove
-    // if above some thresdhold, remove cluster
+    // select only clusters not previously removed
+    auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
+    
 
-    for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
+    for (size_t i=0; i < clus_idx_v.size(); i++){
 
       // store output cluster hit indices
       std::vector<unsigned int> out_cluster_hit_idx_v;
@@ -126,7 +124,7 @@ namespace larlite {
 	_nhits = hit_w_v.size();
 	_tree->Fill();
 
-	double IPmaxExp = 80 * exp(- (_nhits-10.) / 30. ) + 5.;
+	double IPmaxExp = _A * exp(- (_nhits + _xshift) / _fact ) + _yshift;
 	
 	if (IPmin > IPmaxExp) remove = true;
       }// else statement

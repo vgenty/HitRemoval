@@ -37,7 +37,7 @@ algo = fmwk.VertexSlopeCorrelation()
 algo.setClusterProducer("pandoraCosmic")
 algo.setVertexProducer("mcvertex")
 algo.setVerbose(False)
-algo.setMaxIP(10.)
+algo.setCutFunction(80,-10,30,5)
 algo.setMinNHits(10)
 algo.setROIRadius(100.)
 

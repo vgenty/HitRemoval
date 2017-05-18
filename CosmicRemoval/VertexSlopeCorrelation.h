@@ -52,8 +52,9 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    // set max IP
-    void setMaxIP(double IP) { _IP_max = IP; }
+    // set function to apply for cut
+    void setCutFunction(double A, double xshift, double fact, double yshift)
+    {_A = A; _xshift = xshift; _fact = fact; _yshift = yshift; }
     // set min number of hits for cluster to be considered
     void setMinNHits(int n) { _min_nhits = n; }
     // set ROI radius (cm)
@@ -69,9 +70,13 @@ namespace larlite {
     std::string _clusProducer;
     std::string _vtxProducer;
 
-    double _IP_max;
     int _min_nhits;
     double _roi_radius;
+
+    double _A;
+    double _xshift;
+    double _fact;
+    double _yshift;
 
     double _ip;
     int    _nhits;

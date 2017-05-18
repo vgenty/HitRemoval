@@ -52,16 +52,12 @@ namespace larlite {
     */
     virtual bool finalize();
 
-    /// set ROI size (cm away from vtx)
-    void setROIRadius(double r) { _roi_radius = r; }
-
-    /// set max linearity for cluster
-    void setMaxLin(double l) { _lin_max = l; }
-
-    /// minimum "far" and "close" distance
-    void setDFarMin  (double d) { _dfar_min = d;   }
-    void setDCloseMin(double d) { _dclose_min = d; }
-
+    // set function to apply for cut
+    void setCutFunction(double A, double xshift, double fact, double yshift)
+    { _A = A; _xshift = xshift; _fact = fact; _yshift = yshift; }
+    /// set maximum angle allowed
+    void setMaxAngle(double a) { _angle_max = a; }
+    
     /// Set Producers
     void setClusterProducer(std::string s) { _clusProducer = s; }
     void setVertexProducer (std::string s) { _vtxProducer  = s; }
@@ -72,13 +68,11 @@ namespace larlite {
     std::string _clusProducer;
     std::string _vtxProducer;
 
-    /// ROI radius
-    double _roi_radius;
-    /// max lin
-    double _lin_max;
-    /// min dfar / dclose
-    double _dfar_min;
-    double _dclose_min;
+    double _A;
+    double _xshift;
+    double _fact;
+    double _yshift;
+    double _angle_max;
 
     int _nhits;
     double _ip, _angle;
