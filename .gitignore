@@ -7,7 +7,6 @@
 *Dict.h
 *Dict.cxx
 *Dict.cc
-.depend
 *.rootmap
 *.so
 *.dylib
@@ -16,3 +15,5 @@
 *.dat
 *.info
 *.ipynb
+*.pdf
+*.depend
