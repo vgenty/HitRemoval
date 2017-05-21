@@ -53,12 +53,7 @@ namespace larlite {
     /// set maximum SSV
     void setMaxSSV(double s) { _ssv = s; }
 
-    /// set debug
-    void setDebug(bool on) { _debug = on; }
-
   protected:
-
-    bool _debug;
 
     /// producers
     std::string _clusterProducer;
