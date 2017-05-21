@@ -202,7 +202,7 @@ namespace larlite {
 
   bool CalculateHitRemovalEff::loadVertex(event_vertex* ev_vtx) {
       
-    if (ev_vtx->size() != 1) return false;
+    if ( (!ev_vtx) || (ev_vtx->size() != 1) ) return false;
     
     // get vertex position on each plane
     if ( (ev_vtx->size() == 1) ){
