@@ -34,7 +34,10 @@ namespace larlite {
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
-    for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
+    // select only clusters not previously removed
+    auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
+
+    for (size_t i=0; i < clus_idx_v.size(); i++){
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -67,12 +70,12 @@ namespace larlite {
       if (lin._local_lin_truncated_avg < max_lin)
 	remove = true;
 
-      if (_debug)
+      if (_verbose)
 	std::cout << "Pl : " << pl << "\t nhit : " << hit_w_v.size() << "\t lin : " << lin._local_lin_truncated_avg
 		  << "\t ssv : " << lin._summed_square_variance << std::endl;
       
       if ( lin._summed_square_variance < _ssv ) {
-	if (_debug) std::cout << "\tremoved SSV" << std::endl;
+	if (_verbose) std::cout << "\tremoved SSV" << std::endl;
 	remove = true;
       }
 

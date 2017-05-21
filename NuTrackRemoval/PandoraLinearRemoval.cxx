@@ -86,11 +86,14 @@ namespace larlite {
       print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
+
+    // select only clusters not previously removed
+    auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
     
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
-    for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
+    for (size_t i=0; i < clus_idx_v.size(); i++){
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -99,9 +102,6 @@ namespace larlite {
       // get coordinates of hits to calculate linearity
       std::vector<double> hit_w_v;
       std::vector<double> hit_t_v;
-
-      // don't look at clusters that have already been removed
-      if (ev_hit->at(hit_idx_v[0]).GoodnessOfFit() < 0) continue;
 
       auto pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
       
@@ -122,6 +122,7 @@ namespace larlite {
 	if (dd < dvtx_min) { dvtx_min = dd; }
 	if (dd > dvtx_max) { dvtx_max = dd; }
       }
+      
       dvtx_min = sqrt(dvtx_min);
       dvtx_max = sqrt(dvtx_max);
 

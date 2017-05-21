@@ -62,11 +62,6 @@ namespace larlite {
     /// set max proton distance
     void setMaxProtonDist(double d) { _max_proton_dist = d; }
     
-    /// Verbosity setter
-    void setVerbose(bool on) { _verbose = on; }
-    void setDebug  (bool on) { _debug   = on; }
-    
-
     /// set vertex radius
     void setVtxRadius(double r) { _vtx_rad = r; }
     
@@ -75,10 +70,6 @@ namespace larlite {
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
   protected:
-
-    /// vertex coordinates
-    std::vector<double> _vtx_w_cm;
-    std::vector<double> _vtx_t_cm;
 
     /// maximum linearity for hits
     std::vector<double> _max_lin_v;
@@ -92,14 +83,6 @@ namespace larlite {
     /// max proton linearity
     double _max_proton_lin;
     
-    /// verbosity flag
-    bool _verbose;
-    /// debug flag
-    bool _debug;
-
-    /// conversion factors for hits
-    double _wire2cm, _time2cm;
-
     /// producers
     std::string _clusterProducer;
     std::string _vertexProducer;

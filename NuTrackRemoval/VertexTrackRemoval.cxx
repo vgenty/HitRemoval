@@ -68,17 +68,22 @@ namespace larlite {
       return false;
     }
 
-    if (!ev_vtx){
-      print(larlite::msg::kERROR,__FUNCTION__,"no vertex");
+    if (loadVertex(ev_vtx) == false) {
+      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
     
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
-    for (size_t i=0; i < ass_cluster_hit_v.size(); i++){
+    // select only clusters not previously removed
+    auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
+
+    for (size_t i=0; i < clus_idx_v.size(); i++){
 
       auto hit_idx_v = ass_cluster_hit_v[i];
+
+      if (hit_idx_v.size() == 0) continue;
 
       bool remove = false;
 
@@ -105,19 +110,24 @@ namespace larlite {
       // and the neutrino vertex
       double dvtx_min = 1e6;
       double dvtx_max = 0.;
+
       for (size_t u=0; u < hit_w_v.size(); u++) {
+
 	auto wpt = hit_w_v[u];
 	auto tpt = hit_t_v[u];
+	
 	double dd = ( ( (wpt - _vtx_w_cm[pl]) * (wpt - _vtx_w_cm[pl]) ) +
 		      ( (tpt - _vtx_t_cm[pl]) * (tpt - _vtx_t_cm[pl]) ) );
+	
 	if (dd < dvtx_min) { dvtx_min = dd; }
 	if (dd > dvtx_max) { dvtx_max = dd; }
+	
       }
 
       dvtx_min = sqrt(dvtx_min);
       dvtx_max = sqrt(dvtx_max);
 
-      if (_debug)
+      if (_verbose)
 	std::cout << "Cluster size       : " << hit_w_v.size() << std::endl
 		  << "\t plane           : " << pl << std::endl
 		  << "\t vtx dist        : " << dvtx_min << std::endl;
@@ -132,7 +142,7 @@ namespace larlite {
       _local_lin_avg       = lin._local_lin_avg;
       _local_lin_truncated = lin._local_lin_truncated_avg;
 
-      if (_debug)
+      if (_verbose)
 	std::cout << "\t lin             : " << lin._lin << std::endl
 		  << "\t local lin avg   : " << lin._local_lin_avg << std::endl
 		  << "\t local lin trunc : " << lin._local_lin_truncated_avg << std::endl
@@ -142,16 +152,15 @@ namespace larlite {
 		  << "\t MAX PROT DIST   : " << _max_proton_dist << std::endl
 		  << "\t MAX PROT LIN    : " << _max_proton_lin << std::endl;
 	
-
       // remove linear clusters
       if (_local_lin_truncated < max_lin){
-	if (_debug) std::cout << "\t REMOVE CLUSTER" << std::endl;
+	if (_verbose) std::cout << "\t REMOVE CLUSTER" << std::endl;
 	remove = true;
       }
 
       // remove protons
       if ( (dvtx_max < _max_proton_dist) && (_local_lin_truncated < _max_proton_lin) ) {
-	if (_debug) std::cout << "\t REMOVE PROTONS" << std::endl;
+	if (_verbose) std::cout << "\t REMOVE PROTONS" << std::endl;
 	remove = true;
       }
 
