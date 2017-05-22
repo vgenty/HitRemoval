@@ -63,6 +63,9 @@ namespace larlite {
 
       if (hit_idx_v.size() == 0) continue;
 
+      // require min number of hits to be a cosmic
+      if (hit_idx_v.size() < _nhitmax) continue;
+
       // if negative GoF -> removed.
       if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 )
 	cosmic_clus_v[pl].push_back( i );

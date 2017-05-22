@@ -25,11 +25,6 @@ namespace larlite {
 
   bool PandoraLinearRemoval::initialize() {
 
-    std::cout << "********************************" << std::endl;
-    std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
-    std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
-    std::cout << "********************************" << std::endl;
-
 
     _intercept.clear();
     _slope.clear();
@@ -89,6 +84,10 @@ namespace larlite {
 
     // select only clusters not previously removed
     auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
+
+    if (_verbose)
+      std::cout << "examining " << clus_idx_v.size()
+		<< " of " << ass_cluster_hit_v.size() << " total clusters" << std::endl; 
     
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
@@ -127,7 +126,7 @@ namespace larlite {
       dvtx_max = sqrt(dvtx_max);
 
       // only look at clusters starting close to the vertex.
-      if (dvtx_min > _dvtx_max) continue;
+      //if (dvtx_min > _dvtx_max) continue;
 
       // if the cluster exits the ROI, remove
       if (dvtx_max > _roi_rad) remove = true;
