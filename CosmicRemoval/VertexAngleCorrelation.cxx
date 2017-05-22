@@ -50,8 +50,8 @@ namespace larlite {
 
     // select only clusters not previously removed
     auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
-    
-    for (size_t i=0; i < clus_idx_v.size(); i++){
+
+    for (auto const& i : clus_idx_v) {
 
       // store output cluster hit indices
       std::vector<unsigned int> out_cluster_hit_idx_v;

@@ -13,7 +13,6 @@ namespace larlite {
 
     _name        = "RemoveDeltaRays";
     _fout        = 0;
-    _verbose     = false;
     _clusProducer = "";
     _vertexProducer = "";
 
@@ -80,18 +79,32 @@ namespace larlite {
 
       if (hit_idx_v.size() == 0) continue;
 
-      // if negative GoF -> removed, ignore
-      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) continue;
+      if (hit_idx_v.size() != 36) continue;
 
+      // if negative GoF -> removed, ignore
+      bool already_removed = true;
+      for (auto const& hit_idx : hit_idx_v) {
+	if (_ev_hit->at(hit_idx).GoodnessOfFit() > 0 ) {
+	  already_removed = false;
+	  break;
+	}
+      }
+
+      std::cout << "nhits = " << hit_idx_v.size() << " @ pl " << pl << std::endl;
+      
+      if (already_removed == true) continue;
+      
       // if too many hits -> remove
       if (hit_idx_v.size() > _max_delta_hits) continue;
 
       // if out of ROI, ignore this delta-ray (OK not to remove)
       auto const& hit0 = _ev_hit->at(hit_idx_v.at(0));
-      double wcm = hit0.WireID().Wire * _wire2cm;
+      
+      double wcm = hit0.WireID().Wire * _wire2cm ;
       double tcm = hit0.PeakTime() * _time2cm;
       double dvtx = sqrt( (wcm - _vtx_w_cm[pl]) * (wcm - _vtx_w_cm[pl]) +
 			  (tcm - _vtx_t_cm[pl]) * (tcm - _vtx_t_cm[pl]) );
+      
       if (dvtx > _roi) continue;
       
       // compare this delta-ray to all removed muons in the plane
@@ -129,9 +142,11 @@ namespace larlite {
     // max distance to muon
     double ddmax = 0.0;
 
-    //std::cout << muon.size() << " muon hits" << std::endl;
-    //std::cout << deltaray.size() << " delta-ray hits" << std::endl;
-    //std::cout << "delta-ray @ [" << _ev_hit->at(deltaray[0]).PeakTime() * _time2cm << ", " << _ev_hit->at(deltaray[0]).WireID().Wire * _wire2cm << "]" << std::endl;
+    if (_verbose) {
+      std::cout << muon.size() << " muon hits" << std::endl;
+      std::cout << deltaray.size() << " delta-ray hits" << std::endl;
+      std::cout << "delta-ray @ [" << _ev_hit->at(deltaray[0]).PeakTime() * _time2cm << ", " << _ev_hit->at(deltaray[0]).WireID().Wire * _wire2cm << "]" << std::endl;
+    }
     
     // find minimum distance between delta-ray candidate and cosmic muon
     for (auto mu_h_idx : muon) {
@@ -142,13 +157,11 @@ namespace larlite {
 
 	double dd = _distSq_(mu_h,dr_h);
 
-	//std::cout << "\t dist = " << dd << std::endl;
-
 	if (dd < ddmin) { ddmin = dd; hidxmin = mu_h_idx; }
       }
     }
 
-    //std::cout << "ddmin is " << ddmin << std::endl;
+    if (_verbose) std::cout << "ddmin is " << sqrt(ddmin) << std::endl;
 
     if (  sqrt(ddmin) > _d_delta_min ) return false;
 
@@ -165,9 +178,11 @@ namespace larlite {
 
     }// for all delta-ray hits
 
+    if (_verbose) std::cout << "ddmax is " << sqrt(ddmax) << std::endl;
+
     if ( sqrt(ddmax) > _d_delta_max ) return false;
 
-    //std::cout << "dmin = " << (int)(10.*sqrt(ddmin)) << ", dmax = " << (int)(10.*sqrt(ddmax)) << " mm" << std::endl;
+    if (_verbose) { std::cout << "\t\t REMOVE DELTA-RAY" << std::endl; }
 	
     return true;
   }

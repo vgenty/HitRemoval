@@ -49,13 +49,13 @@ namespace larlite {
 
     // select only clusters not previously removed
     auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
-    
 
-    for (size_t i=0; i < clus_idx_v.size(); i++){
+    if (_verbose) {
+      std::cout << std::endl << " NEW EVENT : " << clus_idx_v.size() << " CLUSTERS "
+		<< std::endl << std::endl;
+    }
 
-      // store output cluster hit indices
-      std::vector<unsigned int> out_cluster_hit_idx_v;
-      larlite::cluster out_clus;
+    for (auto const& i : clus_idx_v) {
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -64,6 +64,8 @@ namespace larlite {
       bool remove = false;
 
       int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
+
+      if (_verbose) std::cout << "Nhits = " << hit_idx_v.size() << " @ Plane " << pl << " @ idx " << i << std::endl;
 
       // get coordinates of hits to calculate linearity
       std::vector<double> hit_w_v;
