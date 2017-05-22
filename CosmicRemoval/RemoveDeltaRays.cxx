@@ -2,17 +2,14 @@
 #define LARLITE_REMOVEDELTARAYS_CXX
 
 #include "RemoveDeltaRays.h"
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-#include "DataFormat/cluster.h"
-#include "DataFormat/vertex.h"
 
 namespace larlite {
 
-  RemoveDeltaRays::RemoveDeltaRays() {
+  RemoveDeltaRays::RemoveDeltaRays()
+    : HitRemovalBase()
+  {
 
     _name        = "RemoveDeltaRays";
-    _fout        = 0;
     _clusProducer = "";
     _vertexProducer = "";
 
@@ -26,6 +23,8 @@ namespace larlite {
   }
   
   bool RemoveDeltaRays::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
 
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
     auto ev_vtx  = storage->get_data<event_vertex> (_vertexProducer);
@@ -79,8 +78,6 @@ namespace larlite {
 
       if (hit_idx_v.size() == 0) continue;
 
-      if (hit_idx_v.size() != 36) continue;
-
       // if negative GoF -> removed, ignore
       bool already_removed = true;
       for (auto const& hit_idx : hit_idx_v) {
@@ -90,12 +87,18 @@ namespace larlite {
 	}
       }
 
-      std::cout << "nhits = " << hit_idx_v.size() << " @ pl " << pl << std::endl;
-      
       if (already_removed == true) continue;
       
-      // if too many hits -> remove
+      // if too many hits -> ignore
       if (hit_idx_v.size() > _max_delta_hits) continue;
+
+      /*
+      // if too few hits -> remove
+      if (hit_idx_v.size() <= 10) {
+	delta_ray_v.push_back( i );
+	continue;
+      }
+      */
 
       // if out of ROI, ignore this delta-ray (OK not to remove)
       auto const& hit0 = _ev_hit->at(hit_idx_v.at(0));
@@ -122,16 +125,13 @@ namespace larlite {
 	_ev_hit->at(hit_idx).set_goodness(-1.0);
       }
     }// for all delta-rays
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
       
     return true;
   }
 
-  bool RemoveDeltaRays::finalize() {
-
-    return true;
-  }
-
-  
   bool RemoveDeltaRays::DeltaRay(const std::vector<unsigned int>& muon,
 				 const std::vector<unsigned int>& deltaray) {
 

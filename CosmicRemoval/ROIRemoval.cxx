@@ -7,8 +7,7 @@ namespace larlite {
 
   ROIRemoval::ROIRemoval() {
 
-    _name        = "ROIRemoval";
-    _fout        = 0;
+    _name = "ROIRemoval";
     _clusProducer = "";
     _vertexProducer = "";
 
@@ -20,6 +19,8 @@ namespace larlite {
   }
   
   bool ROIRemoval::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
 
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
     auto ev_vtx  = storage->get_data<event_vertex> (_vertexProducer);
@@ -77,12 +78,10 @@ namespace larlite {
       }// if out of ROI
 
     }// for all clusters
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
       
-    return true;
-  }
-
-  bool ROIRemoval::finalize() {
-
     return true;
   }
 

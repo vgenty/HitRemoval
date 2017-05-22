@@ -2,18 +2,14 @@
 #define LARLITE_VERTEXANGLECORRELATION_CXX
 
 #include "VertexAngleCorrelation.h"
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-#include "DataFormat/cluster.h"
-#include "DataFormat/vertex.h"
 
 namespace larlite {
 
-  VertexAngleCorrelation::VertexAngleCorrelation() {
+  VertexAngleCorrelation::VertexAngleCorrelation()
+    : HitRemovalBase()
+  {
 
     _name        = "VertexAngleCorrelation";
-    _fout        = 0;
-    _verbose     = false;
     _clusProducer = "";
     _vtxProducer  = "";
     
@@ -31,6 +27,8 @@ namespace larlite {
   }
   
   bool VertexAngleCorrelation::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
 
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
@@ -162,19 +160,12 @@ namespace larlite {
       }
       
     }// for all clusters
-    
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
     
     return true;
   }
   
-  bool VertexAngleCorrelation::finalize() {
-
-    _fout->cd();
-    _tree->Write();
-  
-    return true;
-  }
-
-
 }
 #endif

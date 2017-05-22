@@ -2,18 +2,14 @@
 #define LARLITE_VERTEXDISTANCECORRELATION_CXX
 
 #include "VertexDistanceCorrelation.h"
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-#include "DataFormat/cluster.h"
-#include "DataFormat/vertex.h"
 
 namespace larlite {
 
-  VertexDistanceCorrelation::VertexDistanceCorrelation() {
+  VertexDistanceCorrelation::VertexDistanceCorrelation()
+    : HitRemovalBase()
+  {
 
     _name        = "VertexDistanceCorrelation";
-    _fout        = 0;
-    _verbose     = false;
     _clusProducer = "";
     _vtxProducer  = "";
     
@@ -25,6 +21,8 @@ namespace larlite {
   }
   
   bool VertexDistanceCorrelation::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
 
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
@@ -201,13 +199,9 @@ namespace larlite {
       
     }// for all clusters
 
-  
-    return true;
-  }
-
-  bool VertexDistanceCorrelation::finalize() {
-
-  
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
+    
     return true;
   }
 

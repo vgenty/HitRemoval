@@ -2,6 +2,7 @@
 #define HITREMOVALBASE_CXX
 
 #include "HitRemovalBase.h"
+#include <iomanip>
 
 namespace larlite {
 
@@ -15,6 +16,24 @@ namespace larlite {
     _wire2cm  = larutil::GeometryHelper::GetME()->WireToCm();
     _time2cm  = larutil::GeometryHelper::GetME()->TimeToCm();
 
+    _fout = 0;
+    _name = "HitRemovalBase";
+
+    _event_time = 0.;
+    _event_num  = 0;
+
+  }
+
+  bool HitRemovalBase::finalize() {
+
+    if (_fout) _fout->cd();
+    if (_tree) _tree->Write();
+
+    double time_per_event = _event_time / _event_num;
+    std::cout << "Algo " << std::setw(25) << _name << " : "
+	      << time_per_event * 1.e3 << " [ms/event]" << std::endl;
+
+    return true;
   }
  
   bool HitRemovalBase::loadVertex(event_vertex* ev_vtx) {
@@ -47,15 +66,22 @@ namespace larlite {
 
     std::vector<unsigned int> return_indices;
     
-    // assumes that 1st GoodnessOfFit value is indicative of entire cluster
-
     for (size_t i=0; i < clus_idx_v.size(); i++) {
 
       auto idx_v = clus_idx_v.at(i);
-    
+
       if (idx_v.size() == 0) continue;
-      
-      if (ev_hit->at(idx_v.at(0)).GoodnessOfFit() > 0)
+
+      bool removed = true;
+
+      for (auto const& idx : idx_v) {
+	if (ev_hit->at(idx).GoodnessOfFit() > 0) {
+	  removed = false;
+	  break;
+	}
+      }// for all hits in cluster
+
+      if (removed == false)
 	return_indices.push_back( i );
       
     }// for all clustrs

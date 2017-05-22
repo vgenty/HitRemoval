@@ -15,9 +15,6 @@
 #ifndef LARLITE_REMOVEDELTARAYS_H
 #define LARLITE_REMOVEDELTARAYS_H
 
-#include "Analysis/ana_base.h"
-#include "DataFormat/hit.h"
-
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
@@ -27,7 +24,7 @@ namespace larlite {
      \class RemoveDeltaRays
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveDeltaRays : public ana_base, HitRemovalBase {
+  class RemoveDeltaRays : public HitRemovalBase {
   
   public:
 
@@ -46,11 +43,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in RemoveDeltaRays.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
 
     /// set delta-ray distances
     void setDeltaRayDistMin(double d) { _d_delta_min = d; }

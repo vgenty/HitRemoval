@@ -2,18 +2,14 @@
 #define LARLITE_VERTEXSLOPECORRELATION_CXX
 
 #include "VertexSlopeCorrelation.h"
-#include "LArUtil/GeometryHelper.h"
-#include "LArUtil/Geometry.h"
-#include "DataFormat/cluster.h"
-#include "DataFormat/vertex.h"
 
 namespace larlite {
 
-  VertexSlopeCorrelation::VertexSlopeCorrelation() {
+  VertexSlopeCorrelation::VertexSlopeCorrelation()
+    : HitRemovalBase()
+  {
 
     _name        = "VertexSlopeCorrelation";
-    _fout        = 0;
-    _verbose     = false;
     _clusProducer = "";
     _vtxProducer  = "";
     
@@ -30,6 +26,8 @@ namespace larlite {
   }
   
   bool VertexSlopeCorrelation::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
 
     auto ev_vtx  = storage->get_data<event_vertex>(_vtxProducer);
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
@@ -138,18 +136,12 @@ namespace larlite {
       }
       
     }// for all clusters
-    
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
     
     return true;
   }
   
-  bool VertexSlopeCorrelation::finalize() {
-
-    _fout->cd();
-    _tree->Write();
-    
-    return true;
-  }
-
 }
 #endif

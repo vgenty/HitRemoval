@@ -15,9 +15,6 @@
 #ifndef LARLITE_VERTEXDISTANCECORRELATION_H
 #define LARLITE_VERTEXDISTANCECORRELATION_H
 
-#include "Analysis/ana_base.h"
-#include "DataFormat/hit.h"
-
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
@@ -27,7 +24,7 @@ namespace larlite {
      \class VertexDistanceCorrelation
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexDistanceCorrelation : public ana_base, HitRemovalBase {
+  class VertexDistanceCorrelation : public HitRemovalBase {
   
   public:
 
@@ -46,11 +43,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in VertexDistanceCorrelation.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
 
     /// set ROI size (cm away from vtx)
     void setROIRadius(double r) { _roi_radius = r; }
