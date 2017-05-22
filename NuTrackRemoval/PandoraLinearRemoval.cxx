@@ -25,7 +25,6 @@ namespace larlite {
 
   bool PandoraLinearRemoval::initialize() {
 
-
     _intercept.clear();
     _slope.clear();
 
@@ -54,6 +53,8 @@ namespace larlite {
   }
   
   bool PandoraLinearRemoval::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
     
     if ( (_clusterProducer == "") || (_vertexProducer == "") ) {
       print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
@@ -92,7 +93,7 @@ namespace larlite {
     // loop trhough each cluster and calculate linaerity
     // if above some thresdhold, remove cluster
 
-    for (size_t i=0; i < clus_idx_v.size(); i++){
+    for (auto const& i : clus_idx_v) {
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -181,15 +182,12 @@ namespace larlite {
       }
       
     }// for all clusters
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
   
   return true;
   }
-
-  bool PandoraLinearRemoval::finalize() {
-
-    return true;
-  }
-
 
   bool PandoraLinearRemoval::lineCut(const double& x, const double& y) {
 

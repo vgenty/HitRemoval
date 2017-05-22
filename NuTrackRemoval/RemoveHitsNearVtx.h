@@ -15,8 +15,6 @@
 #ifndef LARLITE_REMOVEHITSNEARVERTEX_H
 #define LARLITE_REMOVEHITSNEARVERTEX_H
 
-#include "Analysis/ana_base.h"
-
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
@@ -28,7 +26,7 @@ namespace larlite {
      \class RemoveHitsNearVtx
      User custom analysis class made by SHELL_USER_NAME
    */
-  class RemoveHitsNearVtx : public ana_base, public HitRemovalBase {
+  class RemoveHitsNearVtx : public HitRemovalBase {
   
   public:
 
@@ -47,12 +45,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in RemoveHitsNearVtx.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
-
 
     /// vertex buffer region
     void setVtxRadius(double r) { _vtx_rad = r; }

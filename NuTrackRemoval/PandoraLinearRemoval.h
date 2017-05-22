@@ -15,8 +15,6 @@
 #ifndef LARLITE_PANDORALINEARREMOVAL_H
 #define LARLITE_PANDORALINEARREMOVAL_H
 
-#include "Analysis/ana_base.h"
-
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
@@ -28,7 +26,7 @@ namespace larlite {
      \class PandoraLinearRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class PandoraLinearRemoval : public ana_base, public HitRemovalBase{
+  class PandoraLinearRemoval : public HitRemovalBase{
   
   public:
 
@@ -47,11 +45,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in PandoraLinearRemoval.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
 
     void addSlopePt(double slope, double lin) {
       _pts_x_v.push_back(slope);

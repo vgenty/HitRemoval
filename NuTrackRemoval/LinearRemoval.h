@@ -15,8 +15,6 @@
 #ifndef LARLITE_LINEARREMOVAL_H
 #define LARLITE_LINEARREMOVAL_H
 
-#include "Analysis/ana_base.h"
-
 #include "HitRemovalBase.h"
 
 #include "TwoDimTools/Linearity.h"
@@ -26,7 +24,7 @@ namespace larlite {
      \class LinearRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class LinearRemoval : public ana_base, HitRemovalBase {
+  class LinearRemoval : public HitRemovalBase {
   
   public:
 
@@ -39,8 +37,6 @@ namespace larlite {
     virtual bool initialize();
 
     virtual bool analyze(storage_manager* storage);
-
-    virtual bool finalize();
 
     /// Set Producers
     void setClusterProducer(std::string s) { _clusterProducer = s; }

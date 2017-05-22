@@ -38,6 +38,8 @@ namespace larlite {
   
   bool TrackDeltaRayRemoval::analyze(storage_manager* storage) {
 
+    _event_watch.Start();
+
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
 
     _ev_hit = nullptr;
@@ -103,16 +105,13 @@ namespace larlite {
       for (auto const& hit_idx : hit_idx_v)
 	_ev_hit->at(hit_idx).set_goodness(-1.0);
     }// for all delta-rays
-    
-    return true;
-  }
 
-  bool TrackDeltaRayRemoval::finalize() {
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
 
     return true;
   }
 
-  
   bool TrackDeltaRayRemoval::DeltaRay(const std::vector<unsigned int>& muon,
 				      const std::vector<unsigned int>& deltaray) {
 

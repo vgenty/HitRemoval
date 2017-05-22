@@ -12,6 +12,8 @@ namespace larlite {
 
   
   bool LinearRemoval::analyze(storage_manager* storage) {
+
+    _event_watch.Start();
   
     if ( (_clusterProducer == "") ) {
       print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
@@ -37,7 +39,7 @@ namespace larlite {
     // select only clusters not previously removed
     auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
 
-    for (size_t i=0; i < clus_idx_v.size(); i++){
+    for (auto const& i : clus_idx_v) {
 
       auto hit_idx_v = ass_cluster_hit_v[i];
 
@@ -87,11 +89,8 @@ namespace larlite {
       
     }// for all clusters
 
-
-    return true;
-  }
-
-  bool LinearRemoval::finalize() {
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
 
     return true;
   }

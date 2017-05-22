@@ -15,8 +15,6 @@
 #ifndef LARLITE_VERTEXTRACKREMOVAL_H
 #define LARLITE_VERTEXTRACKREMOVAL_H
 
-#include "Analysis/ana_base.h"
-
 #include "TwoDimTools/Linearity.h"
 
 #include "HitRemovalBase.h"
@@ -28,7 +26,7 @@ namespace larlite {
      \class VertexTrackRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class VertexTrackRemoval : public ana_base, public HitRemovalBase {
+  class VertexTrackRemoval : public HitRemovalBase {
   
   public:
 
@@ -47,11 +45,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in VertexTrackRemoval.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
 
     /// set maximum linearity allowed for this
     void setMaxLinearity(double l) { _max_lin_v.push_back( l ); }

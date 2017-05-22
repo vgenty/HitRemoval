@@ -46,6 +46,8 @@ namespace larlite {
   
   bool VertexTrackRemoval::analyze(storage_manager* storage) {
 
+    _event_watch.Start();
+
     if ( (_clusterProducer == "") || (_vertexProducer == "") ) {
       print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
       return false;
@@ -171,13 +173,11 @@ namespace larlite {
       }
       
     }// for all clusters
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
   
   return true;
-  }
-
-  bool VertexTrackRemoval::finalize() {
-
-    return true;
   }
 
 }

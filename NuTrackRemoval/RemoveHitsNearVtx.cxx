@@ -27,6 +27,8 @@ namespace larlite {
   
   bool RemoveHitsNearVtx::analyze(storage_manager* storage) {
 
+    _event_watch.Start();
+
     if ( (_hitProducer == "") || (_vertexProducer == "") ) {
       print(larlite::msg::kERROR,__FUNCTION__,"did not specify producers");
       return false;
@@ -76,15 +78,12 @@ namespace larlite {
 	ev_hit->at(i).set_goodness(-1.0);
       
     }// for all hits
+
+    _event_time += _event_watch.RealTime();
+    _event_num  += 1;
   
   return true;
   }
-
-  bool RemoveHitsNearVtx::finalize() {
-
-    return true;
-  }
-
 
 }
 #endif

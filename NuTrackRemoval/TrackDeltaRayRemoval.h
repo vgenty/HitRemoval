@@ -5,7 +5,7 @@
  * 
  * \brief Class def header for a class TrackDeltaRayRemoval
  *
- * @author david
+ * @author david caratelli
  */
 
 /** \addtogroup Clustering
@@ -14,8 +14,6 @@
 
 #ifndef LARLITE_TRACKDELTARAYREMOVAL_H
 #define LARLITE_TRACKDELTARAYREMOVAL_H
-
-#include "Analysis/ana_base.h"
 
 #include "TwoDimTools/Linearity.h"
 
@@ -26,7 +24,7 @@ namespace larlite {
      \class TrackDeltaRayRemoval
      User custom analysis class made by SHELL_USER_NAME
    */
-  class TrackDeltaRayRemoval : public ana_base, public HitRemovalBase {
+  class TrackDeltaRayRemoval : public HitRemovalBase {
   
   public:
 
@@ -45,11 +43,6 @@ namespace larlite {
         Analyze a data event-by-event  
     */
     virtual bool analyze(storage_manager* storage);
-
-    /** IMPLEMENT in TrackDeltaRayRemoval.cc! 
-        Finalize method to be called after all events processed.
-    */
-    virtual bool finalize();
 
     /// set delta-ray distances
     void setDeltaRayDistMin(double d) { _d_delta_min = d; }
