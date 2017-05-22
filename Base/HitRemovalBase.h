@@ -24,6 +24,8 @@
 #include "DataFormat/vertex.h"
 #include "DataFormat/cluster.h"
 
+#include "TwoDimTools/Linearity.h"
+
 #include <TStopwatch.h>
 
 #include "TTree.h"
@@ -59,6 +61,8 @@ namespace larlite {
 
     std::vector<unsigned int> AvailableClusterIndices(const larlite::event_hit* ev_hit,
 						      const std::vector< std::vector<unsigned int> >& clus_idx_v);
+
+    double ImpactParameter(const twodimtools::Linearity& lin, const int& pl);
 
     bool loadVertex(event_vertex *ev_vtx);
 

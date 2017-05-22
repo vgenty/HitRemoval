@@ -89,6 +89,17 @@ namespace larlite {
     return return_indices;
   }
 
+  double HitRemovalBase::ImpactParameter(const twodimtools::Linearity& lin,
+					 const int& pl) {
+    
+    // impact parameter to vertex:
+    double x0 = _vtx_w_cm[pl];
+    double y0 = _vtx_t_cm[pl];
+    double IP    = ( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
+
+    return IP;
+  }
+
 }
 
 #endif
