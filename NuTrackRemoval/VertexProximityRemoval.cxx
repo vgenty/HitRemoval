@@ -5,14 +5,12 @@
 
 namespace larlite {
 
-  VertexProximityRemoval::VertexProximityRemoval()  {
+  VertexProximityRemoval::VertexProximityRemoval()
+    : HitRemovalBase()
+  {
 
     _name        = "VertexProximityRemoval";
     _fout        = 0;
-    
-    _clusterProducer = "";
-    _vertexProducer  = "";
-    
   }
 
   bool VertexProximityRemoval::initialize() {
@@ -57,8 +55,9 @@ namespace larlite {
     // select only clusters not previously removed
     auto const& clus_idx_v = AvailableClusterIndices(ev_hit, ass_cluster_hit_v);
 
-    std::cout << "examining " << clus_idx_v.size()
-	      << " of " << ass_cluster_hit_v.size() << " total clusters" << std::endl; 
+    if (_verbose)
+      std::cout << "examining " << clus_idx_v.size()
+		<< " of " << ass_cluster_hit_v.size() << " total clusters" << std::endl; 
 
     for (auto const& i : clus_idx_v) {
 

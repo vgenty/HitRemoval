@@ -8,7 +8,9 @@
 
 namespace larlite {
 
-  RemoveHitsNearVtx::RemoveHitsNearVtx()  {
+  RemoveHitsNearVtx::RemoveHitsNearVtx()
+    : HitRemovalBase()
+  {
 
     _name        = "RemoveHitsNearVtx";
     _fout        = 0;
@@ -16,11 +18,6 @@ namespace larlite {
   }
 
   bool RemoveHitsNearVtx::initialize() {
-
-    std::cout << "********************************" << std::endl;
-    std::cout << "Wire -> cm conversion : " << _wire2cm << std::endl;
-    std::cout << "Time -> cm conversion : " << _time2cm << std::endl;
-    std::cout << "********************************" << std::endl;
 
     return true;
   }

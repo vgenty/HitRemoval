@@ -5,17 +5,13 @@
 
 namespace larlite {
 
-  VertexTrackRemoval::VertexTrackRemoval()  {
+  VertexTrackRemoval::VertexTrackRemoval()
+    : HitRemovalBase()
+  {
 
     _name        = "VertexTrackRemoval";
     _fout        = 0;
     
-    _clusterProducer = "";
-    _vertexProducer  = "";
-    
-    _max_lin_v = {0.0};
-    _min_n_hits_v = {0};
-
   }
 
   bool VertexTrackRemoval::initialize() {

@@ -45,13 +45,7 @@ namespace larlite {
     _tree->Branch("_nremoved_2",&_nremoved_2,"nremoved_2/I");
     _tree->Branch("_frac_2",&_frac_2,"frac_2/D");
 
-    _tree->Branch("_qtot_2_roi",&_qtot_2_roi,"qtot_2_roi/D");
-    _tree->Branch("_qremoved_2_roi",&_qremoved_2_roi,"qremoved_2_roi/D");
-    _tree->Branch("_ntot_2_roi",&_ntot_2_roi,"ntot_2_roi/I");
-    _tree->Branch("_nremoved_2_roi",&_nremoved_2_roi,"nremoved_2_roi/I");
-    _tree->Branch("_frac_2_roi",&_frac_2_roi,"frac_2_roi/D");
-
-    _tree->Branch("_nclus_0_v","std::vector<int>",&_nclus_0_v);
+     _tree->Branch("_nclus_0_v","std::vector<int>",&_nclus_0_v);
     _tree->Branch("_nclus_1_v","std::vector<int>",&_nclus_1_v);
     _tree->Branch("_nclus_2_v","std::vector<int>",&_nclus_2_v);
 
@@ -130,13 +124,11 @@ namespace larlite {
     _qtot_0 = _qremoved_0 = 0.;
     _qtot_1 = _qremoved_1 = 0.;
     _qtot_2 = _qremoved_2 = 0.;
-    _qtot_2_roi = _qremoved_2_roi = 0.;
 
     _ntot = _nremoved = 0;
     _ntot_0 = _nremoved_0 = 0;
     _ntot_1 = _nremoved_1 = 0;
     _ntot_2 = _nremoved_2 = 0;
-    _ntot_2_roi = _nremoved_2_roi = 0;
 
     for (size_t i=0; i < ev_hit->size(); i++) {
 
@@ -145,6 +137,12 @@ namespace larlite {
       auto q   = hit.Integral();
       auto pl  = hit.WireID().Plane;
       auto GoF = hit.GoodnessOfFit();
+      
+      auto const& wcm = fabs( (hit.WireID().Wire * _wire2cm) - _vtx_w_cm[pl]  );
+      auto const& tcm = fabs( (hit.PeakTime()    * _time2cm) - _vtx_t_cm[pl]  );
+
+      // out of ROI?
+      if ( (wcm > _roi) or (tcm > _roi) ) continue;
       
       _qtot += q;
       _ntot += 1;
@@ -160,22 +158,6 @@ namespace larlite {
 	if (pl == 1) { _qremoved_1 += q; _nremoved_1 += 1; }
 	if (pl == 2) { _qremoved_2 += q; _nremoved_2 += 1; }
       }// if removed
-
-      auto const& wcm = hit.WireID().Wire * _wire2cm;
-      auto const& tcm = hit.PeakTime()    * _time2cm;
-
-      // for plane 2 look at charge in ROI
-      if (pl == 2) {
-	double dvtx = ( (_vtx_w_cm[pl] - wcm) * (_vtx_w_cm[pl] - wcm) ) + ( (_vtx_t_cm[pl] - tcm) * (_vtx_t_cm[pl] - tcm) );
-	if (dvtx < (_roi*_roi) ) {
-	  _qtot_2_roi += q;
-	  _ntot_2_roi += 1;
-	  if (GoF < 0) {
-	    _qremoved_2_roi += q;
-	    _nremoved_2_roi += 1;
-	  }
-	}
-      }
       
     }// for all hits
 
@@ -183,7 +165,6 @@ namespace larlite {
     _frac_0 = _qremoved_0/_qtot_0;
     _frac_1 = _qremoved_1/_qtot_1;
     _frac_2 = _qremoved_2/_qtot_2;
-    _frac_2_roi = _qremoved_2_roi/_qtot_2_roi;
 
     _tree->Fill();
   

@@ -11,7 +11,9 @@
 
 namespace larlite {
 
-  PandoraLinearRemoval::PandoraLinearRemoval()  {
+  PandoraLinearRemoval::PandoraLinearRemoval() :
+    HitRemovalBase()
+  {
 
     _name        = "PandoraLinearRemoval";
     _fout        = 0;

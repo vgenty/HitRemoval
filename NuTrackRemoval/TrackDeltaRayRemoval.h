@@ -49,9 +49,12 @@ namespace larlite {
     void setDeltaRayDistMax(double d) { _d_delta_max = d; }
     // set max # hits for a delta-ray
     void setMaxNHitsDelta(int n) { _nhitmax = n; }
+    /// set ROI size
+    void setROI(double r) { _roi = r; }
 
     /// Set Producers
     void setClusterProducer(std::string s) { _clusProducer = s; }
+    void setVertexProducer(std::string s) { _vertexProducer = s; }
 
   protected:
 
@@ -67,9 +70,17 @@ namespace larlite {
 
     /// Producers
     std::string _clusProducer;
+    std::string _vertexProducer;
+
+    // map connecting each cluster index to the cluster bounding box
+    // each entry is [wmin, wmax, tmin, tmax]
+    std::map< size_t, BBox > _clus_bbox;
 
     // minimum & max dist to delta-ray
     double _d_delta_min, _d_delta_max;
+
+    // max ROI
+    double _roi;
 
     // maximum # of hits for a delta-ray
     int _nhitmax;

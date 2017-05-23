@@ -9,7 +9,9 @@
 
 namespace larlite {
 
-  TrackDeltaRayRemoval::TrackDeltaRayRemoval() {
+  TrackDeltaRayRemoval::TrackDeltaRayRemoval()
+    : HitRemovalBase()
+  {
 
     _name        = "TrackDeltaRayRemoval";
     _fout        = 0;
@@ -40,13 +42,21 @@ namespace larlite {
 
     _event_watch.Start();
 
+    _clus_bbox.clear();
+
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
+    auto ev_vtx  = storage->get_data<event_vertex> (_vertexProducer);
 
     _ev_hit = nullptr;
     auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), _ev_hit, ev_clus->name());
 
     if (!_ev_hit){
       print(larlite::msg::kERROR,__FUNCTION__,"no hits");
+      return false;
+    }
+
+    if (loadVertex(ev_vtx) == false) {
+      print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
 
@@ -69,9 +79,14 @@ namespace larlite {
       if (hit_idx_v.size() < _nhitmax) continue;
 
       // if negative GoF -> removed.
-      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 )
-	cosmic_clus_v[pl].push_back( i );
+      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() > 0 ) continue;
 
+      _clus_bbox[i] = GetBBox(hit_idx_v,_ev_hit);
+
+      if ( Intersect(_clus_bbox[i], _roi, pl) == false) continue;
+
+      cosmic_clus_v[pl].push_back( i );
+      
     }// for all clusters
 
     // now for small clusters that have not been removed
@@ -87,13 +102,35 @@ namespace larlite {
       if (hit_idx_v.size() == 0) continue;
 
       // if negative GoF -> removed, ignore
-      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) continue;
+      bool already_removed = true;
+      for (auto const& hit_idx : hit_idx_v) {
+	if (_ev_hit->at(hit_idx).GoodnessOfFit() > 0 ) {
+	  already_removed = false;
+	  break;
+	}
+      }
 
+      if (already_removed == true) continue;
+      
       // if too many hits -> remove
       if (hit_idx_v.size() > _nhitmax) continue;
+
+      // if out of ROI, ignore this delta-ray (OK not to remove)
+      auto const& hit0 = _ev_hit->at(hit_idx_v.at(0));
+      
+      double wcm = hit0.WireID().Wire * _wire2cm ;
+      double tcm = hit0.PeakTime() * _time2cm;
+      double dvtx = sqrt( (wcm - _vtx_w_cm[pl]) * (wcm - _vtx_w_cm[pl]) +
+			  (tcm - _vtx_t_cm[pl]) * (tcm - _vtx_t_cm[pl]) );
       
       // compare this delta-ray to all removed muons in the plane
-      for (auto const& muidx : cosmic_clus_v[pl]){
+      for (auto const& muidx : cosmic_clus_v[pl]) {
+	// 1st check if delta-ray compatible with muon's BBox
+	auto bbox = _clus_bbox[muidx];
+	if (wcm > bbox.wmax + _d_delta_max) continue;
+	if (wcm < bbox.wmin - _d_delta_max) continue;
+	if (tcm > bbox.tmax + _d_delta_max) continue;
+	if (tcm < bbox.tmin - _d_delta_max) continue;
 	if (DeltaRay( ass_cluster_hit_v[muidx], hit_idx_v ) == true )
 	delta_ray_v.push_back( i );
       }

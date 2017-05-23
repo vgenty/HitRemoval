@@ -36,7 +36,7 @@ my_proc.set_output_file("cosmicremoval.root")
 # ROI REMOVAL
 algo = fmwk.ROIRemoval()
 algo.setClusterProducer("pandoraCosmic")
-algo.setVertexProducer("mcvertex")
+algo.setVertexProducer("randomvertex")
 algo.setVerbose(False)
 algo.setROI(100.)
 
@@ -46,7 +46,7 @@ my_proc.add_process( algo )
 
 algo = fmwk.VertexSlopeCorrelation()
 algo.setClusterProducer("pandoraCosmic")
-algo.setVertexProducer("mcvertex")
+algo.setVertexProducer("randomvertex")
 algo.setVerbose(False)
 algo.setCutFunction(80,-10,30,5)
 algo.setMinNHits(10)
@@ -58,7 +58,7 @@ my_proc.add_process( algo )
 
 algo = fmwk.VertexAngleCorrelation()
 algo.setClusterProducer("pandoraCosmic")
-algo.setVertexProducer("mcvertex")
+algo.setVertexProducer("randomvertex")
 algo.setVerbose(False)
 algo.setCutFunction(100,-5,15,5)
 algo.setMaxAngle(160.)
@@ -69,10 +69,10 @@ my_proc.add_process( algo )
 
 algo = fmwk.RemoveDeltaRays()
 algo.setClusterProducer("pandoraCosmic")
-algo.setVertexProducer("mcvertex")
+algo.setVertexProducer("randomvertex")
 algo.setVerbose(False)
 algo.setDeltaRayDistMin(1.0);
-algo.setDeltaRayDistMax(10.0);
+algo.setDeltaRayDistMax(15.0);
 algo.setMaxDeltaHits(50);
 algo.setROI(120.)
 
@@ -80,7 +80,7 @@ my_proc.add_process( algo )
 
 my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
 my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
-my_proc.set_data_to_write(fmwk.data.kVertex,   "mcvertex" )
+my_proc.set_data_to_write(fmwk.data.kVertex,   "randomvertex" )
 
 my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"    )
 my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic"   )

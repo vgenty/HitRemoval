@@ -36,11 +36,11 @@ my_proc.set_output_file("hitremoval_dr.root")
 algo = fmwk.RemoveDeltaRays()
 algo.setClusterProducer("pandoraCosmic")
 algo.setVertexProducer("mcvertex")
-algo.setVerbose(False)
+algo.setVerbose(True)
 algo.setDeltaRayDistMin(1.0);
-algo.setDeltaRayDistMax(10.0);
+algo.setDeltaRayDistMax(15.0);
 algo.setMaxDeltaHits(50);
-algo.setROI(120.)
+algo.setROI(150.)
 
 my_proc.add_process( algo )
 
@@ -48,7 +48,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(31,1)
 
 sys.exit()
 

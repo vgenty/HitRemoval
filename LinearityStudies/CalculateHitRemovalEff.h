@@ -64,11 +64,11 @@ namespace larlite {
     double _wire2cm, _time2cm;
 
     TTree* _tree;
-    double _qtot, _qtot_0, _qtot_1, _qtot_2, _qtot_2_roi;
-    double _qremoved, _qremoved_0, _qremoved_1, _qremoved_2, _qremoved_2_roi;
-    int    _ntot, _ntot_0, _ntot_1, _ntot_2, _ntot_2_roi;
-    int    _nremoved, _nremoved_0, _nremoved_1, _nremoved_2, _nremoved_2_roi;
-    double _frac, _frac_0, _frac_1, _frac_2, _frac_2_roi;
+    double _qtot, _qtot_0, _qtot_1, _qtot_2;
+    double _qremoved, _qremoved_0, _qremoved_1, _qremoved_2;
+    int    _ntot, _ntot_0, _ntot_1, _ntot_2;
+    int    _nremoved, _nremoved_0, _nremoved_1, _nremoved_2;
+    double _frac, _frac_0, _frac_1, _frac_2;
     int _nc, _pi0;
     double _pi0E;
     // number of MCshwoers in event

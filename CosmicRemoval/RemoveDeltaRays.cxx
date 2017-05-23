@@ -99,14 +99,6 @@ namespace larlite {
       // if too many hits -> ignore
       if (hit_idx_v.size() > _max_delta_hits) continue;
 
-      /*
-      // if too few hits -> remove
-      if (hit_idx_v.size() <= 10) {
-	delta_ray_v.push_back( i );
-	continue;
-      }
-      */
-
       // if out of ROI, ignore this delta-ray (OK not to remove)
       auto const& hit0 = _ev_hit->at(hit_idx_v.at(0));
       
