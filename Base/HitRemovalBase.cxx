@@ -54,7 +54,7 @@ namespace larlite {
 	_vtx_w_cm[pl] = pt.w;
 	_vtx_t_cm[pl] = pt.t + 800 * _time2cm - origin[0];
       }
-    }    
+    }
 
     return true;
   }
@@ -98,6 +98,49 @@ namespace larlite {
     double IP    = ( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
 
     return IP;
+  }
+
+
+  BBox HitRemovalBase::GetBBox(const std::vector<unsigned int>& hit_idx_v,
+			       larlite::event_hit* ev_hit) {
+
+    // determine cluster's bbox
+    double wmin, tmin, wmax, tmax;
+    wmin = tmin = 10000.;
+    wmax = tmax = 0.;
+    
+    for (auto const& hit_idx : hit_idx_v){
+      double w = ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
+      double t = ev_hit->at(hit_idx).PeakTime() * _time2cm;
+      if (w > wmax) wmax = w;
+      if (w < wmin) wmin = w;
+      if (t > tmax) tmax = t;
+      if (t < tmin) tmin = t;
+    }// for all hits
+    
+    BBox box;
+    box.wmin = wmin;
+    box.wmax = wmax;
+    box.tmin = tmin;
+    box.tmax = tmax;
+
+    return box;
+  }
+
+
+  bool HitRemovalBase::Intersect(const BBox& box, const double& radius, const int& pl) {
+
+    BBox roi;
+    
+    roi.wmin = _vtx_w_cm[pl] - radius;
+    roi.wmax = _vtx_w_cm[pl] + radius;
+    roi.tmin = _vtx_t_cm[pl] - radius;
+    roi.tmax = _vtx_t_cm[pl] + radius;
+
+    if ( (box.wmax < roi.wmin) || (box.wmin > roi.wmax) ) return false;
+    if ( (box.tmax < roi.tmin) || (box.tmin > roi.tmax) ) return false;
+
+    return true;
   }
 
 }

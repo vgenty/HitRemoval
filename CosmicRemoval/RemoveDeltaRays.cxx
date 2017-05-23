@@ -61,32 +61,13 @@ namespace larlite {
       if (hit_idx_v.size() < _max_delta_hits) continue;
 
       // if negative GoF -> removed.
-      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) {
+      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() > 0 ) continue;
 
-	cosmic_clus_v[pl].push_back( i );
+      _clus_bbox[i] = GetBBox(hit_idx_v,_ev_hit);
 
-	// determine cluster's bbox
-	double wmin, tmin, wmax, tmax;
-	wmin = tmin = 10000.;
-	wmax = tmax = 0.;
-	
-	for (auto const& hit_idx : hit_idx_v){
-	  double w = _ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
-	  double t = _ev_hit->at(hit_idx).PeakTime() * _time2cm;
-	  if (w > wmax) wmax = w;
-	  if (w < wmin) wmin = w;
-	  if (t > tmax) tmax = t;
-	  if (t < tmin) tmin = t;
-	}// for all hits
+      if ( Intersect( _clus_bbox[i], _roi, pl) == false) continue;
 
-	BBox box;
-	box.wmin = wmin;
-	box.wmax = wmax;
-	box.tmin = tmin;
-	box.tmax = tmax;
-	_clus_bbox[ i ] = box;
-	
-      }// if cluster was removed
+      cosmic_clus_v[pl].push_back( i );
 
     }// for all clusters
 

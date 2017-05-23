@@ -30,6 +30,13 @@
 
 #include "TTree.h"
 
+struct BBox {
+  double wmin;
+  double wmax;
+  double tmin;
+  double tmax;
+};
+
 namespace larlite {
 
   /**
@@ -59,10 +66,30 @@ namespace larlite {
     double     _event_time;
     int        _event_num;
 
+    /**
+       returns list of indices of clusters that have not yet been removed
+	clusters that have not been removed are identified by locating
+	clusters with at least one hit with GoF > 0.
+     */
     std::vector<unsigned int> AvailableClusterIndices(const larlite::event_hit* ev_hit,
 						      const std::vector< std::vector<unsigned int> >& clus_idx_v);
 
+    /**
+       Calculate impact parameter w.r.t. vertex for a lin (using slope + intercept)
+       Returns impact parameter
+     */
     double ImpactParameter(const twodimtools::Linearity& lin, const int& pl);
+
+
+    /**
+       Given a set of hit indices and the event hit list return the cluster's BBox
+     */
+    BBox GetBBox(const std::vector<unsigned int>& hit_idx_v, larlite::event_hit* ev_hit);
+    
+    /**
+       check whether a BBox intersects the ROI
+     */
+    bool Intersect(const BBox& box, const double& radius, const int& pl);
 
     bool loadVertex(event_vertex *ev_vtx);
 

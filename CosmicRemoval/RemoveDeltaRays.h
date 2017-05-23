@@ -5,7 +5,7 @@
  * 
  * \brief Class def header for a class RemoveDeltaRays
  *
- * @author david
+ * @author david caratelli [dcaratelli@nevis.columbia.edu]
  */
 
 /** \addtogroup Clustering
@@ -20,13 +20,6 @@
 #include "TwoDimTools/Linearity.h"
 
 #include <map>
-
-struct BBox {
-  double wmin;
-  double wmax;
-  double tmin;
-  double tmax;
-};
 
 namespace larlite {
   /**
