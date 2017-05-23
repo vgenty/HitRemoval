@@ -26,6 +26,8 @@ namespace larlite {
 
     _event_watch.Start();
 
+    _clus_bbox.clear();
+
     auto ev_clus = storage->get_data<event_cluster>(_clusProducer);
     auto ev_vtx  = storage->get_data<event_vertex> (_vertexProducer);
 
@@ -59,8 +61,32 @@ namespace larlite {
       if (hit_idx_v.size() < _max_delta_hits) continue;
 
       // if negative GoF -> removed.
-      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 )
+      if ( _ev_hit->at(hit_idx_v.at(0)).GoodnessOfFit() < 0 ) {
+
 	cosmic_clus_v[pl].push_back( i );
+
+	// determine cluster's bbox
+	double wmin, tmin, wmax, tmax;
+	wmin = tmin = 10000.;
+	wmax = tmax = 0.;
+	
+	for (auto const& hit_idx : hit_idx_v){
+	  double w = _ev_hit->at(hit_idx).WireID().Wire  * _wire2cm;
+	  double t = _ev_hit->at(hit_idx).PeakTime() * _time2cm;
+	  if (w > wmax) wmax = w;
+	  if (w < wmin) wmin = w;
+	  if (t > tmax) tmax = t;
+	  if (t < tmin) tmin = t;
+	}// for all hits
+
+	BBox box;
+	box.wmin = wmin;
+	box.wmax = wmax;
+	box.tmin = tmin;
+	box.tmax = tmax;
+	_clus_bbox[ i ] = box;
+	
+      }// if cluster was removed
 
     }// for all clusters
 
@@ -112,6 +138,12 @@ namespace larlite {
       
       // compare this delta-ray to all removed muons in the plane
       for (auto const& muidx : cosmic_clus_v[pl]){
+	// 1st check if delta-ray compatible with muon's BBox
+	auto bbox = _clus_bbox[muidx];
+	if (wcm > bbox.wmax + _d_delta_max) continue;
+	if (wcm < bbox.wmin - _d_delta_max) continue;
+	if (tcm > bbox.tmax + _d_delta_max) continue;
+	if (tcm < bbox.tmin - _d_delta_max) continue;
 	if (DeltaRay( ass_cluster_hit_v[muidx], hit_idx_v ) == true )
 	delta_ray_v.push_back( i );
       }
@@ -120,10 +152,8 @@ namespace larlite {
 
     for (auto const& delta_ray : delta_ray_v){
       auto hit_idx_v = ass_cluster_hit_v[delta_ray];
-      for (auto const& hit_idx : hit_idx_v){
-	//std::cout << "removing hit @ " << _ev_hit->at(hit_idx).PeakTime() * _time2cm << ", " << _ev_hit->at(hit_idx).WireID().Wire * _wire2cm << "]" << std::endl;
+      for (auto const& hit_idx : hit_idx_v)
 	_ev_hit->at(hit_idx).set_goodness(-1.0);
-      }
     }// for all delta-rays
 
     _event_time += _event_watch.RealTime();
@@ -132,6 +162,7 @@ namespace larlite {
     return true;
   }
 
+  // input vectors are the indices of the hits of the muon and delta-ray respectively
   bool RemoveDeltaRays::DeltaRay(const std::vector<unsigned int>& muon,
 				 const std::vector<unsigned int>& deltaray) {
 

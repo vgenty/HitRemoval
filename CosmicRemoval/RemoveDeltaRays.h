@@ -19,6 +19,15 @@
 
 #include "TwoDimTools/Linearity.h"
 
+#include <map>
+
+struct BBox {
+  double wmin;
+  double wmax;
+  double tmin;
+  double tmax;
+};
+
 namespace larlite {
   /**
      \class RemoveDeltaRays
@@ -70,6 +79,10 @@ namespace larlite {
     std::string _clusProducer;
     std::string _vertexProducer;
 
+    // map connecting each cluster index to the cluster bounding box
+    // each entry is [wmin, wmax, tmin, tmax]
+    std::map< size_t, BBox > _clus_bbox;
+    
     // minimum & max dist to delta-ray
     double _d_delta_min, _d_delta_max;
     int _max_delta_hits;
