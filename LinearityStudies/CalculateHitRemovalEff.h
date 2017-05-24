@@ -28,9 +28,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    CalculateHitRemovalEff()
-      : _tree(nullptr)
-      { _name="CalculateHitRemovalEff"; _fout=0;}
+    CalculateHitRemovalEff();
 
     /// Default destructor
     virtual ~CalculateHitRemovalEff(){}
@@ -54,7 +52,10 @@ namespace larlite {
 
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
+    /// set ROI size
     void setROI(double r) { _roi = r; }
+    /// set amplitude cut for hits [hits < threshold do not pass hit-removal]
+    void setHitAmpCut(double a) { _hit_amp = a; }
 
   protected:
 
@@ -81,6 +82,7 @@ namespace larlite {
     bool _use_truth;
 
     double _roi;
+    double _hit_amp;
 
     std::vector<double> _vtx_w_cm, _vtx_t_cm;
     std::string _vertexProducer;

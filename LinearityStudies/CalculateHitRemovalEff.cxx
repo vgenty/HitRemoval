@@ -13,6 +13,14 @@
 
 namespace larlite {
 
+  CalculateHitRemovalEff::CalculateHitRemovalEff()
+    : _tree(nullptr)
+  {
+    _name = "CalculateHitRemovalEff";
+    _fout = 0;
+    _hit_amp = 0.;
+  }
+
   bool CalculateHitRemovalEff::initialize() {
 
     if (_tree) delete _tree;
@@ -137,6 +145,7 @@ namespace larlite {
       auto q   = hit.Integral();
       auto pl  = hit.WireID().Plane;
       auto GoF = hit.GoodnessOfFit();
+      auto amp = hit.PeakAmplitude();
       
       auto const& wcm = fabs( (hit.WireID().Wire * _wire2cm) - _vtx_w_cm[pl]  );
       auto const& tcm = fabs( (hit.PeakTime()    * _time2cm) - _vtx_t_cm[pl]  );
@@ -151,7 +160,7 @@ namespace larlite {
       if (pl == 1) { _qtot_1 += q; _ntot_1 += 1; }
       if (pl == 2) { _qtot_2 += q; _ntot_2 += 1; }
       
-      if (GoF < 0) {
+      if ( (GoF < 0) || (amp < _hit_amp)) {
 	_qremoved += q;
 	_nremoved += 1;
 	if (pl == 0) { _qremoved_0 += q; _nremoved_0 += 1; }
