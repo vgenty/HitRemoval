@@ -3,6 +3,7 @@
 
 #include "HitRemovalBase.h"
 #include <iomanip>
+#include <random>
 
 namespace larlite {
 
@@ -18,6 +19,8 @@ namespace larlite {
 
     _fout = 0;
     _name = "HitRemovalBase";
+
+    _vertex_smearing_dist = 0.;
 
     _event_time = 0.;
     _event_num  = 0;
@@ -43,9 +46,14 @@ namespace larlite {
     // get vertex position on each plane
     if ( (ev_vtx->size() == 1) ){
       auto const& vtx = ev_vtx->at(0);
+
+      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+      if (_vertex_smearing_dist > 0.)
+	SmearVertex(xyz);
+      
       auto geoH = larutil::GeometryHelper::GetME();
       auto geom = larutil::Geometry::GetME();
-      std::vector<double> xyz = {vtx.X(), vtx.Y(), vtx.Z()};
+
       for (size_t pl = 0; pl < 3; pl++){
 	double *origin;
 	origin = new double[3];
@@ -57,6 +65,27 @@ namespace larlite {
     }
 
     return true;
+  }
+
+  void HitRemovalBase::SmearVertex(std::vector<double>& xyz) {
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::normal_distribution<> gauss(0,_vertex_smearing_dist);
+
+    double xoffset = gauss(gen);
+    double yoffset = gauss(gen);
+    double zoffset = gauss(gen);
+
+    if (_verbose) 
+      std::cout << "vtx shifted by [ " << xoffset << ", "
+		<< yoffset << ", " << zoffset << " ]" << std::endl;
+    
+    xyz.at(0) += xoffset;
+    xyz.at(1) += yoffset;
+    xyz.at(2) += zoffset;
+
+    return;
   }
 
   std::vector<unsigned int> HitRemovalBase::AvailableClusterIndices(const larlite::event_hit* ev_hit,

@@ -59,6 +59,8 @@ namespace larlite {
     /// Verbosity setter
     void setVerbose(bool on) { _verbose = on; }
 
+    /// set how much to smear the vertex by
+    void setVertexSmearing(double d) { _vertex_smearing_dist = d; }
 
   protected:
 
@@ -91,6 +93,11 @@ namespace larlite {
      */
     bool Intersect(const BBox& box, const double& radius, const int& pl);
 
+    /**
+       smear vertex location : boolean flag
+     */
+    void SmearVertex(std::vector<double>& xyz);
+    
     bool loadVertex(event_vertex *ev_vtx);
 
     /// vertex coordinates
@@ -101,6 +108,8 @@ namespace larlite {
     double _wire2cm, _time2cm;
 
     bool _verbose;
+
+    double _vertex_smearing_dist;
 
     TTree* _tree;
     
