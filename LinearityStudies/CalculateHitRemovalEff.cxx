@@ -19,12 +19,17 @@ namespace larlite {
     _name = "CalculateHitRemovalEff";
     _fout = 0;
     _hit_amp = 0.;
+    _entry = 0;
   }
 
   bool CalculateHitRemovalEff::initialize() {
 
     if (_tree) delete _tree;
     _tree = new TTree("_tre","hit removal tree");
+
+    _tree->Branch("_event",&_event,"event/I");
+    _tree->Branch("_entry",&_entry,"entry/I");
+    _tree->Branch("_run",&_run,"run/I");
 
     _tree->Branch("_nshr",&_nshr,"nshr/I");
     _tree->Branch("_edepshr",&_edepshr,"edepshr/D");
@@ -102,6 +107,9 @@ namespace larlite {
 
     auto ev_mctruth= storage->get_data<event_mctruth>("generator");
 
+    _run   = storage->run_id();
+    _event = storage->event_id();
+
     if (!ev_mctruth) { std::cout << "no truth" << std::endl; }
 
     if (_use_truth) {
@@ -176,6 +184,8 @@ namespace larlite {
     _frac_2 = _qremoved_2/_qtot_2;
 
     _tree->Fill();
+
+    _entry += 1;
   
     return true;
   }

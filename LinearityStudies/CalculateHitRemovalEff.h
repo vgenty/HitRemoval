@@ -65,6 +65,7 @@ namespace larlite {
     double _wire2cm, _time2cm;
 
     TTree* _tree;
+    int _event, _run, _entry;
     double _qtot, _qtot_0, _qtot_1, _qtot_2;
     double _qremoved, _qremoved_0, _qremoved_1, _qremoved_2;
     int    _ntot, _ntot_0, _ntot_1, _ntot_2;
