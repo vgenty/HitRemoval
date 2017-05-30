@@ -50,6 +50,8 @@ namespace larlite {
 
     void setUseTruth(bool on) { _use_truth = on; }
 
+    void setUseCluster(bool on) { _use_cluster = on; }
+
     void setVertexProducer (std::string s) { _vertexProducer  = s; }
 
     /// set ROI size
@@ -60,6 +62,8 @@ namespace larlite {
   protected:
 
     bool loadVertex(event_vertex *ev_vtx);
+
+    bool _use_cluster;
 
     /// conversion factors for hits
     double _wire2cm, _time2cm;

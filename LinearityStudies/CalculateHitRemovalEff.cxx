@@ -85,10 +85,20 @@ namespace larlite {
       print(larlite::msg::kERROR,__FUNCTION__,"num. vertices != 1");
       return false;
     }
+
+    larlite::event_cluster *ev_clus = nullptr;
+    larlite::event_hit     *ev_hit  = nullptr;
+    std::vector< std::vector< unsigned int> > ass_cluster_hit_v;
     
-    auto ev_clus = storage->get_data<event_cluster>("sc");
-    larlite::event_hit *ev_hit = nullptr;
-    auto const& ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
+    if (_use_cluster) {
+      ev_clus = storage->get_data<event_cluster>("sc");
+      ass_cluster_hit_v = storage->find_one_ass(ev_clus->id(), ev_hit, ev_clus->name());
+      for (auto const& clus_ass : ass_cluster_hit_v)
+	_nclus_2_v.push_back( clus_ass.size() );
+    }
+    else {
+      ev_hit = storage->get_data<event_hit>("gaushit");
+    }
 
     _nclus_0_v.clear();
     _nclus_1_v.clear();
@@ -97,9 +107,6 @@ namespace larlite {
     _nshr = 0;
     _edepshr = 0.;
 
-    for (auto const& clus_ass : ass_cluster_hit_v)
-      _nclus_2_v.push_back( clus_ass.size() );
-    
     //auto ev_hit = storage->get_data<event_hit>("gaushit");
     
     auto ev_mcshr = storage->get_data<event_mcshower>("mcreco");
