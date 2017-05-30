@@ -109,6 +109,7 @@ namespace larlite {
 	}
 	
 	// if all 3 the same sign: vertex external to cone swept by slope +/- uncertainty
+	// ignore cases when the vertex is internal to this cone: we want to keep these clusters
 	if ( ( (IP * IPup) < 0 ) || ( (IP * IPdn) < 0 ) || ( (IPup * IPdn) < 0 ) )
 	  continue;
 	
