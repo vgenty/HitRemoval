@@ -11,10 +11,6 @@
 
 #pragma link C++ class larlite::SimpleClusterer+;
 #pragma link C++ class larlite::ProximityClusterer+;
-#pragma link C++ class larlite::LinearHitRemoval+;
-#pragma link C++ class larlite::LinearClusterRemoval+;
-#pragma link C++ class larlite::LinearClusterLocalRemoval+;
-#pragma link C++ class larlite::ClusterFilter+;
 #pragma link C++ class larlite::PhotonClusterer+;
 #pragma link C++ class larlite::RemoveMuonHits+;
 //ADD_NEW_CLASS ... do not change this line

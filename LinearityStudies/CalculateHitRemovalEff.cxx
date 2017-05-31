@@ -78,6 +78,10 @@ namespace larlite {
   
   bool CalculateHitRemovalEff::analyze(storage_manager* storage) {
 
+    _nclus_0_v.clear();
+    _nclus_1_v.clear();
+    _nclus_2_v.clear();
+
     // load vertex
     auto ev_vtx  = storage->get_data<event_vertex>(_vertexProducer);
 
@@ -99,10 +103,6 @@ namespace larlite {
     else {
       ev_hit = storage->get_data<event_hit>("gaushit");
     }
-
-    _nclus_0_v.clear();
-    _nclus_1_v.clear();
-    _nclus_2_v.clear();
 
     _nshr = 0;
     _edepshr = 0.;

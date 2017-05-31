@@ -15,6 +15,7 @@
 #pragma link C++ class larlite::VertexProximityRemoval+;
 #pragma link C++ class larlite::RemoveHitsNearVtx+;
 #pragma link C++ class larlite::TrackDeltaRayRemoval+;
+#pragma link C++ class larlite::RemoveMuonHits+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
