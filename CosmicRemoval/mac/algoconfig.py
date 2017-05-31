@@ -4,7 +4,7 @@ import ROOT
 
 from larlite import larlite as fmwk
 
-VTXSMEAR = 3.0
+VTXSMEAR = 0.0
 
 # ROI REMOVAL
 def ROI():

@@ -40,18 +40,18 @@ my_proc.add_process( loadAlgo("VertexSlopeCorrelation") )
 my_proc.add_process( loadAlgo("VertexAngleCorrelation") )
 my_proc.add_process( loadAlgo("RemoveDeltaRays") )
 
-my_proc.set_data_to_write(fmwk.data.kMCShower, "mcreco"     )
-my_proc.set_data_to_write(fmwk.data.kMCTruth,  "generator"  )
-my_proc.set_data_to_write(fmwk.data.kVertex,   "mcvertex" )
-my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"    )
-my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic"   )
-my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic"   )
+my_proc.set_data_to_write(fmwk.data.kMCShower,    "mcreco"         )
+my_proc.set_data_to_write(fmwk.data.kMCTruth,     "generator"      )
+my_proc.set_data_to_write(fmwk.data.kVertex,      "mcvertex"       )
+my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"        )
+my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic"  )
+my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic"  )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run(0,4000)
 
 sys.exit()
 

@@ -4,7 +4,7 @@ import ROOT
 
 from larlite import larlite as fmwk
 
-VTXSMEAR = 3.0
+VTXSMEAR = 0.0
 
 def VPR():
 
@@ -29,7 +29,6 @@ def PLR():
     algo.addSlopePt(1,0.05)
     algo.addSlopePt(3,0.25)
     algo.addSlopePt(10,0.4)
-    algo.setMaxDVtx(5.)
     algo.setROIRadius(100.)
     algo.setProtonDMax(10.)
     algo.setMaxSSV(0.06)
@@ -116,6 +115,7 @@ def RHNV():
     algo.setHitProducer("gaushit")
     algo.setVertexProducer("mcvertex")
     algo.setVtxRadius(3.5)
+    algo.setVerbose(False)
     algo.setVertexSmearing(VTXSMEAR)
     
     return algo

@@ -19,6 +19,8 @@
 
 #include "TwoDimTools/Linearity.h"
 
+#include "DataFormat/vertex.h"
+
 namespace larlite {
   /**
      \class ClusterLinearityStudy
@@ -29,9 +31,7 @@ namespace larlite {
   public:
 
     /// Default constructor
-    ClusterLinearityStudy()
-      : _tree(nullptr)
-    { _name="ClusterLinearityStudy"; _fout=0;}
+    ClusterLinearityStudy();
 
     /// Default destructor
     virtual ~ClusterLinearityStudy(){}
@@ -52,10 +52,13 @@ namespace larlite {
     virtual bool finalize();
 
     void SetClusterProducer(std::string s) { _clusterProducer = s; }
+    void SetVertexProducer(std::string s) { _vertexProducer = s; }
 
   protected:
 
-    std::string _clusterProducer;
+    bool loadVertex(event_vertex *ev_vtx);
+
+    std::string _clusterProducer, _vertexProducer;
 
     TTree* _tree;
     int    _pl;
@@ -65,9 +68,12 @@ namespace larlite {
     double _local_lin_truncated;
     double _local_lin_avg;
     double _slope;
+    double _dvtx_max, _dvtx_min;
 
     /// conversion factors for hits
     double _wire2cm, _time2cm;
+
+    std::vector<double> _vtx_w_cm, _vtx_t_cm;
     
   };
 }
