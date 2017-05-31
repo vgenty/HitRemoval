@@ -9,7 +9,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class larlite::CosmicRemoval+;
 #pragma link C++ class larlite::RemoveCosmicTracks+;
 #pragma link C++ class larlite::RemoveDeltaRays+;
 #pragma link C++ class larlite::ROIRemoval+;
