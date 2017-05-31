@@ -31,7 +31,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("hitremoval_nutrk.root")
+my_proc.set_output_file("nutrkremoval.root")
 
 # prepare the various hit removal stages
 
