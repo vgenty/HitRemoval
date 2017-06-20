@@ -125,8 +125,6 @@ namespace larlite {
       
       double IP = fabs( - lin._slope * x0 + y0 - lin._intercept ) / sqrt( lin._slope * lin._slope + 1 );
       
-      if (_verbose) std::cout << "IP = " << IP << std::endl;
-      
       // measure angle between :
       // O) vertex
       // A) one end of cluster
@@ -145,6 +143,8 @@ namespace larlite {
       _ip = IP;
       _angle = angleSegment;
       _nhits = hit_w_v.size();
+
+      if (_verbose) std::cout << "IP = " << _ip << "\t angle = " << _angle << std::endl;
       
       _tree->Fill();
       
