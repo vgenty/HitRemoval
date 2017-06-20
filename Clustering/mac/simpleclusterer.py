@@ -33,28 +33,22 @@ my_proc.set_output_file("simplecluster.root")
 
 # prepare the various hit removal stages
 
-_hitproducer    = "gaushit"
-_vtxproducer    = "mcvertex"  #"mcvertex"#"numuCC_vertex"
-_outclus        = "sc"
-
 algo = fmwk.SimpleClusterer()
-algo.setHitProducer(_hitproducer)
-algo.setVtxProducer(_vtxproducer)
-algo.setOutClusProducer(_outclus)
+algo.setHitProducer("gaushit")
+algo.setVtxProducer("mcvertex")
+algo.setOutClusProducer("sc2")
 algo.setRadius(0.4)
 algo.setCellSize(1.0)
-#algo.setMaxHitRMS(19)
 algo.setUseVertex(True)
 algo.setVtxRadius(2.0)
 algo.setVerbose(False)
-#algo.setMinTick(800)
-#algo.setMaxTick(5445)
+algo.setROIRadius(100.)
 
 my_proc.add_process( algo )
 
 #my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit" )
-#my_proc.set_data_to_write(fmwk.data.kCluster,     "sc"      )
-#my_proc.set_data_to_write(fmwk.data.kAssociation, "sc"      )
+my_proc.set_data_to_write(fmwk.data.kCluster,     "sc2"  )
+my_proc.set_data_to_write(fmwk.data.kAssociation, "sc2"  )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
