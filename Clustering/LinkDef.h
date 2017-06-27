@@ -10,6 +10,7 @@
 #pragma link off all functions;
 
 #pragma link C++ class larlite::SimpleClusterer+;
+#pragma link C++ class larlite::IsolatedClusterer+;
 #pragma link C++ class larlite::ProximityClusterer+;
 #pragma link C++ class larlite::PhotonClusterer+;
 #pragma link C++ class larlite::RemoveMuonHits+;
