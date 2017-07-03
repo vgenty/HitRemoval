@@ -27,6 +27,7 @@ namespace larlite {
     _tick_min = 0;
     _tick_max = 9600;
     _roi_radius = 1000;
+    _ignoreGoF  = false;
 
   }
 
@@ -176,12 +177,10 @@ namespace larlite {
 	    }// if the two hits are compatible
 	  }// 2nd loop through hits in the cell
 	  // has this hit been matched? if not we still need to add it as its own cluster
-	  /*
 	    if (matched == false){
 	    _clusterMap[hit1] = maxClusterID;
 	    maxClusterID += 1;
 	    }
-	  */
 	}// 1st loop through hits in the cell
       }// loop through all cells
 
@@ -418,7 +417,7 @@ namespace larlite {
 	continue;
 
       // is goodness of fit negative? if so ignore the hit
-      if (hit.GoodnessOfFit() < 0)
+      if ( (hit.GoodnessOfFit()) < 0 && (_ignoreGoF == false) )
 	continue;
 
       // remove hits with time-tick < _tick_min or > _tick_max

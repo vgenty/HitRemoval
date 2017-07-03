@@ -76,6 +76,8 @@ namespace larlite {
     /// set min tick
     void setMinTick(int t) { _tick_min = t; }
     void setMaxTick(int t) { _tick_max = t; }
+    // ignore goodness of fit?
+    void setIgnoreGoF(bool on) { _ignoreGoF = on; }
 
   protected:
 
@@ -93,6 +95,9 @@ namespace larlite {
 
     /// conversion factors for hits
     double _wire2cm, _time2cm;
+
+    /// ignore goodness of fit variable
+    bool _ignoreGoF;
 
     /// Producers
     std::string _hitProducer;
