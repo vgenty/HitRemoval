@@ -14,7 +14,7 @@ from larlite import larlite as fmwk
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-2):
+for x in xrange(len(sys.argv)-1):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
@@ -25,21 +25,19 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("linearclusterremoval.root");
 
 # Specify data output root file name
-my_proc.set_output_file(sys.argv[-1])
+my_proc.set_output_file("photons.root")
 
-clusterer = fmwk.PhotonClusterer()
-clusterer.setClusterProducer('rawcluster')
-clusterer.setNMin(2)
-clusterer.setNMax(100)
-clusterer.setQMin(60)
-n_hits = [  3, 10, 20, 30, 50, 70, 100, 130, 180, 230]
-lin_v  = [.02,.10,.13,.14,.15,.16, .17, .20, .20, .30]
+algo = fmwk.PhotonClusterer()
+algo.setHitProducer("gaushit")
+algo.setVtxProducer("mcvertex")
+algo.setOutClusProducer("photon")
+algo.setRadius(0.4)
+algo.setCellSize(1.5)
+algo.setUseVertex(True)
+algo.setVerbose(False)
+algo.setROIRadius(200.)
 
-for i,n in enumerate(n_hits):
-    clusterer.setMaxLinearity( lin_v[i] )
-    clusterer.setMinNHits( n )
-
-my_proc.add_process(clusterer)
+my_proc.add_process(algo)
 
 #my_proc.set_data_to_write(fmwk.data.kHit,hitproducer)
 my_proc.set_data_to_write(fmwk.data.kCluster,'photon')
@@ -50,7 +48,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run()
+my_proc.run(0,100)
 
 sys.exit()
 

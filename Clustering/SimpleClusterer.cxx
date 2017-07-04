@@ -27,8 +27,6 @@ namespace larlite {
     _tick_min = 0;
     _tick_max = 9600;
     _roi_radius = 1000;
-    _ignoreGoF  = false;
-
   }
 
   bool SimpleClusterer::initialize() {
@@ -177,10 +175,12 @@ namespace larlite {
 	    }// if the two hits are compatible
 	  }// 2nd loop through hits in the cell
 	  // has this hit been matched? if not we still need to add it as its own cluster
-	    if (matched == false){
+	  /*
+	  if (matched == false){
 	    _clusterMap[hit1] = maxClusterID;
 	    maxClusterID += 1;
 	    }
+	  */
 	}// 1st loop through hits in the cell
       }// loop through all cells
 
@@ -342,8 +342,9 @@ namespace larlite {
       dt = 0;
     double dw = ((double)h1.Channel()-(double)h2.Channel())*_wire2cm;
     if (dw >  0.3) dw -= 0.3;
-    if (dw < -0.3) dw += 0.3;
+    if (dw < -0.3) dw  = 0.3;
     double d = dt*dt + dw*dw;
+
     if (d > (_radius*_radius))
       return false;
 
@@ -361,40 +362,26 @@ namespace larlite {
       auto W1 = h1.RMS() * _time2cm;
       auto W2 = h2.RMS() * _time2cm;
 
-      if ( ( (T1 + W1) > (T2 - W2) ) and
-	   ( (T1 - W1) < (T2 - W2) ) )
-	return true;
-
-      if ( ( (T1 + W1) > (T2 + W2) ) and
-	   ( (T1 - W1) < (T2 + W2) ) )
-	return true;
-
-      if ( ( (T2 + W2) > (T1 - W1) ) and
-	   ( (T2 - W2) < (T1 - W1) ) )
-	return true;
-      
-      if ( ( (T2 + W2) > (T1 + W1) ) and
-	   ( (T2 - W2) < (T1 + W1) ) )
-	return true;
-
       double d = dmin;
       
-      d = fabs( (T1+W1) - (T2-W2) );
-      if (d < dmin)
-	dmin = d;
-      
-      d = fabs( (T1+W1) - (T2+W2) );
-      if (d < dmin)
-	dmin = d;
-      
-      d = fabs( (T1-W1) - (T2+W2) );
-      if (d < dmin)
-	dmin = d;
+      if (T1 > T2) {
 
-      d = fabs( (T1-W1) - (T2-W2) );
-      if (d < dmin)
-	dmin = d;
+	if ( (T2+W2) > (T1-W1) ) return true;
+	
+	d = (T1-W1) - (T2+W2);
+	if (d < dmin) dmin = d;
+	
+      }
+      
+      else {
+	
+	if ( (T1+W1) > (T2-W2) ) return true;
+	
+	d = (T2-W2) - (T1+W1);
+	if (d < dmin) dmin = d;
 
+      }
+	
       return false;
     }
 
@@ -417,7 +404,7 @@ namespace larlite {
 	continue;
 
       // is goodness of fit negative? if so ignore the hit
-      if ( (hit.GoodnessOfFit()) < 0 && (_ignoreGoF == false) )
+      if ( (hit.GoodnessOfFit()) < 0 )
 	continue;
 
       // remove hits with time-tick < _tick_min or > _tick_max
