@@ -24,6 +24,8 @@ namespace larlite {
     _radius      = 2.0;
     _cellSize    = 2;
     _max_rms     = 100;
+    _max_clus_size = 100;
+    _min_lin     = 0.1;
     _vtx_w_cm = {0,0,0};
     _vtx_t_cm = {0,0,0};
     _tick_min = 0;
@@ -242,46 +244,50 @@ namespace larlite {
     std::vector<std::vector<unsigned int> > _cluster_hit_ass;
     // for each cluster create a larlite::cluster
     for (size_t i=0; i < cluster_vector.size(); i++){
-      if (cluster_vector[i].size() > 0){
-	larlite::cluster clus;
-	clus.set_n_hits(cluster_vector[i].size());
-	// grab wire/time bounds for this cluster
-	float w_min = 9999;
-	float t_min = 9999;
-	float w_max = -1;
-	float t_max = -1;
-	float integral = 0;
-	// grab list of hits with which to compute linearity
-	std::vector<double> clus_wire_v;
-	std::vector<double> clus_time_v;
-	for (auto const& idx : cluster_vector[i]){
-	  auto const& hit = evt_hits->at(idx);
-	  float t = hit.PeakTime();
-	  if (t > t_max) t_max = t;
-	  if (t < t_min) t_min = t;
-	  float w = hit.WireID().Wire;
-	  if (w > w_max) w_max = w;
-	  if (w < w_min) w_min = w;
-	  integral += hit.Integral();
-	  clus_time_v.push_back( hit.PeakTime()    * _time2cm );
-	  clus_wire_v.push_back( hit.WireID().Wire * _wire2cm );
-	}
-	::twodimtools::Linearity lin(clus_wire_v,clus_time_v);
-	if (lin._local_lin_truncated_avg < 0.1) continue;
-	clus.set_start_wire(w_min,1.);
-	clus.set_end_wire(w_max,1.);
-	clus.set_start_tick(t_min,1.);
-	clus.set_end_tick(t_max,1.);
-	clus.set_integral(integral,0.,0.);
-	clus.set_summedADC(integral, 0., 0.);
-	clus.set_view( evt_hits->at( cluster_vector[i][0] ).View() );
-	//clus.set_planeID( evt_hits->at( cluster_vector[i][0] ).WireID().Plane );
-	//clus.set_planeID(2);
-	// vector for associations
-	ev_clusters->push_back(clus);
-	_cluster_hit_ass.push_back(cluster_vector[i]);
+      
+      if (cluster_vector[i].size() <= 0) continue;
+
+      if (cluster_vector[i].size() > _max_clus_size) continue;
+      
+      larlite::cluster clus;
+      clus.set_n_hits(cluster_vector[i].size());
+      // grab wire/time bounds for this cluster
+      float w_min = 9999;
+      float t_min = 9999;
+      float w_max = -1;
+      float t_max = -1;
+      float integral = 0;
+      // grab list of hits with which to compute linearity
+      std::vector<double> clus_wire_v;
+      std::vector<double> clus_time_v;
+      for (auto const& idx : cluster_vector[i]){
+	auto const& hit = evt_hits->at(idx);
+	float t = hit.PeakTime();
+	if (t > t_max) t_max = t;
+	if (t < t_min) t_min = t;
+	float w = hit.WireID().Wire;
+	if (w > w_max) w_max = w;
+	if (w < w_min) w_min = w;
+	integral += hit.Integral();
+	clus_time_v.push_back( hit.PeakTime()    * _time2cm );
+	clus_wire_v.push_back( hit.WireID().Wire * _wire2cm );
       }
-    }
+      ::twodimtools::Linearity lin(clus_wire_v,clus_time_v);
+      if (lin._local_lin_truncated_avg < _min_lin) continue;
+      clus.set_start_wire(w_min,1.);
+      clus.set_end_wire(w_max,1.);
+      clus.set_start_tick(t_min,1.);
+      clus.set_end_tick(t_max,1.);
+      clus.set_integral(integral,0.,0.);
+      clus.set_summedADC(integral, 0., 0.);
+      clus.set_view( evt_hits->at( cluster_vector[i][0] ).View() );
+      //clus.set_planeID( evt_hits->at( cluster_vector[i][0] ).WireID().Plane );
+      //clus.set_planeID(2);
+      // vector for associations
+      ev_clusters->push_back(clus);
+      _cluster_hit_ass.push_back(cluster_vector[i]);
+      
+    }// for all created clusters
     
     cluster_ass_v->set_association(ev_clusters->id(),product_id(data::kHit,evt_hits->name()),_cluster_hit_ass);    
 

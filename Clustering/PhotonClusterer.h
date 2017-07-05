@@ -74,6 +74,10 @@ namespace larlite {
     /// set min tick
     void setMinTick(int t) { _tick_min = t; }
     void setMaxTick(int t) { _tick_max = t; }
+    /// set minimum truncated linearity
+    void setMinLin(double d) { _min_lin = d; }
+    /// set maximum number of hits for a cluster
+    void setMaxClusSize(int n) { _max_clus_size = n; }
 
   protected:
 
@@ -121,6 +125,11 @@ namespace larlite {
 
     /// maximum hit RMS allowed
     double _max_rms;
+
+    /// max cluster size
+    size_t _max_clus_size;
+    /// min truncated local linearity
+    double _min_lin;
 
     /// vertex coordinates
     std::vector<double> _vtx_w_cm;

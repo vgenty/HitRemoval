@@ -36,6 +36,8 @@ algo.setCellSize(1.5)
 algo.setUseVertex(True)
 algo.setVerbose(False)
 algo.setROIRadius(200.)
+algo.setMaxClusSize(100)
+algo.setMinLin(0.06)
 
 my_proc.add_process(algo)
 
@@ -48,7 +50,7 @@ print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,100)
+my_proc.run()
 
 sys.exit()
 
