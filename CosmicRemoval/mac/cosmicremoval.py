@@ -20,7 +20,7 @@ print a
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-1):
+for x in xrange(len(sys.argv)-2):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
@@ -31,7 +31,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("hitremoval_ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("cosmicremoval.root")
+my_proc.set_output_file(sys.argv[-1])
 
 # prepare the various hit removal stages
 
@@ -47,11 +47,13 @@ my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit"        )
 my_proc.set_data_to_write(fmwk.data.kCluster,     "pandoraCosmic"  )
 my_proc.set_data_to_write(fmwk.data.kAssociation, "pandoraCosmic"  )
 
+#my_proc.enable_event_alignment(False)
+
 print
 print  "Finished configuring ana_processor. Start event loop!"
 print
 
-my_proc.run(0,4000)
+my_proc.run()
 
 sys.exit()
 

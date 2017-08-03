@@ -54,6 +54,11 @@ namespace larlite {
     for (size_t i=0; i < ass_cluster_hit_v.size(); i++) {
 
       auto hit_idx_v = ass_cluster_hit_v[i];
+
+      if (hit_idx_v[0] >= _ev_hit->size() )  {
+	print(larlite::msg::kERROR,__FUNCTION__,"cluster -> hit ass vector points to hit index out of bounds! skip cluster...");
+	continue;
+      }
       
       int pl = _ev_hit->at(hit_idx_v[0]).WireID().Plane;
 

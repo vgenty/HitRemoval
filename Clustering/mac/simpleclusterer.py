@@ -18,7 +18,7 @@ print a
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-1):
+for x in xrange(len(sys.argv)-2):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
@@ -29,7 +29,7 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("simplecluster.root")
+my_proc.set_output_file(sys.argv[-1])
 
 # prepare the various hit removal stages
 

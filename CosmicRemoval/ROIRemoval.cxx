@@ -51,9 +51,14 @@ namespace larlite {
 
       if (_verbose) std::cout << "new cluster of size " << hit_idx_v.size() << std::endl;
 
-      int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
-
       if (hit_idx_v.size() == 0) continue;
+
+      if (hit_idx_v[0] >= ev_hit->size() )  {
+	print(larlite::msg::kERROR,__FUNCTION__,"cluster -> hit ass vector points to hit index out of bounds! skip cluster...");
+	continue;
+      }
+
+      int pl = ev_hit->at(hit_idx_v[0]).WireID().Plane;
 
       for (auto const& hit_idx : hit_idx_v) {
 
