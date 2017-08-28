@@ -53,20 +53,16 @@ namespace larlite {
     auto ev_clusters   = storage->get_data<event_cluster>(_out_clusterProducer);
     auto cluster_ass_v = storage->get_data<event_ass>(ev_clusters->name());
     auto evt_vtx       = storage->get_data<event_vertex>(_vtxProducer);
-    auto ev_shower     = storage->get_data<event_shower>("showerreco");
+    auto ev_pfpart     = storage->get_data<event_pfpart>("align");
 
     //set event ID through storage manager
     storage->set_id(storage->run_id(),storage->subrun_id(),storage->event_id());
     
-    // grab associated pfparticles
-    larlite::event_pfpart* ev_pfpart = nullptr;
     // grab associated clusters
     larlite::event_cluster* ev_cluster = nullptr;
     // grab associated hits
     larlite::event_hit* ev_hit_shower = nullptr;
 
-    if (!ev_shower) { std::cout << "no showers...quit" << std::endl; return false; }
-    auto const& ass_shr_pfpart_v = storage->find_one_ass(ev_shower->id(), ev_pfpart, ev_shower->name());
     if (!ev_pfpart) { std::cout << "no pfparticles...quit" << std::endl; return false; }
     auto const& ass_pfpart_clus_v = storage->find_one_ass(ev_pfpart->id(), ev_cluster, ev_pfpart->name());
     if (!ev_cluster) { std::cout << "no clusters...quit" << std::endl; return false; }
@@ -75,26 +71,20 @@ namespace larlite {
     // loop through reconstructed showers and keep track of already used hits.
 
     _shr_hit_idx_v.clear();
-    for (size_t s=0; s < ev_shower->size(); s++) {
-      
-      auto const& shr = ev_shower->at(s);
 
-      // grab clusters associated with this shower
-      auto const& ass_clus_idx_v = ass_pfpart_clus_v.at( ass_shr_pfpart_v.at(s).at(0) );
-
+    for (auto const& ass_clus_idx_v : ass_pfpart_clus_v) {
+    
       for (auto const& clus_idx : ass_clus_idx_v){
-
+	
 	// hits associated with this cluster
 	auto const& hit_idx_v = ass_clus_hit_v.at(clus_idx);
-
+	
 	for (auto const& hit_idx : hit_idx_v)
 	  _shr_hit_idx_v.push_back(hit_idx);
-
+	
       }// for all clusters
     }// for all showers
     
-
-
     if (!evt_hits){
       std::cout << "No hits!" << std::endl;
       return false;
@@ -104,7 +94,7 @@ namespace larlite {
       std::cout << "No vertex even though one requested...quit" << std::endl;
       return false;
     }
-
+    
     if ( (_vtxProducer != "") and (evt_vtx->size() == 1) ){
       auto const& vtx = evt_vtx->at(0);
       auto geoH = larutil::GeometryHelper::GetME();
@@ -127,7 +117,7 @@ namespace larlite {
     // keep track of largest cluster ID created
     size_t maxClusterID = 0;
 
-    for (int pl=0; pl < 3; pl++){
+    for (int pl=2; pl < 3; pl++){
 
       // hit map will only contain hits we want to use for clustering
       MakeHitMap(evt_hits,pl);
@@ -216,12 +206,11 @@ namespace larlite {
 	    }// if the two hits are compatible
 	  }// 2nd loop through hits in the cell
 	  // has this hit been matched? if not we still need to add it as its own cluster
-	  /*
 	  if (matched == false){
 	    _clusterMap[hit1] = maxClusterID;
+	    _clusters[maxClusterID] = {hit1};
 	    maxClusterID += 1;
 	  }
-	  */
 	}// 1st loop through hits in the cell
       }// loop through all cells
 
@@ -274,6 +263,7 @@ namespace larlite {
       }
       ::twodimtools::Linearity lin(clus_wire_v,clus_time_v);
       if (lin._local_lin_truncated_avg < _min_lin) continue;
+      if ((lin._local_lin_truncated_avg == 1.0) and (clus_wire_v.size() >= 5)) continue;
       clus.set_start_wire(w_min,1.);
       clus.set_end_wire(w_max,1.);
       clus.set_start_tick(t_min,1.);
@@ -392,10 +382,11 @@ namespace larlite {
     //  if the hit time-ranges overlap, this distnce should be 0
     if (TimeOverlap(h1,h2,dt) == true)
       dt = 0;
-    double dw = ((double)h1.Channel()-(double)h2.Channel())*_wire2cm;
+    double dw = fabs( ((double)h1.Channel()-(double)h2.Channel())*_wire2cm );
     if (dw >  0.3) dw -= 0.3;
-    if (dw < -0.3) dw += 0.3;
+    //if (dw < -0.3) dw = 0;// += 0.3;
     double d = dt*dt + dw*dw;
+
     if (d > (_radius*_radius))
       return false;
 
