@@ -18,7 +18,7 @@ print a
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-1):
+for x in xrange(len(sys.argv)-2):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
@@ -29,11 +29,11 @@ my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
 my_proc.set_ana_output_file("ana.root");
 
 # Specify data output root file name
-my_proc.set_output_file("simplecluster.root")
+my_proc.set_output_file(sys.argv[-1])
 
 # prepare the various hit removal stages
 
-algo = fmwk.SimpleClusterer()
+algo = fmwk.Spallation()
 algo.setHitProducer("gaushit")
 algo.setVtxProducer("")
 algo.setOutClusProducer("spallation")
@@ -47,8 +47,8 @@ algo.setROIRadius(100.)
 my_proc.add_process( algo )
 
 #my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit" )
-#my_proc.set_data_to_write(fmwk.data.kCluster,     "spallation"  )
-#my_proc.set_data_to_write(fmwk.data.kAssociation, "spallation"  )
+my_proc.set_data_to_write(fmwk.data.kCluster,     "spallation"  )
+my_proc.set_data_to_write(fmwk.data.kAssociation, "spallation"  )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"
