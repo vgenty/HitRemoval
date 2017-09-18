@@ -18,37 +18,33 @@ print a
 my_proc = fmwk.ana_processor()
 
 # Set input root file
-for x in xrange(len(sys.argv)-2):
+for x in xrange(len(sys.argv)-1):
     fname = sys.argv[x+1]
     my_proc.add_input_file(fname)
     
 # Specify IO mode
-my_proc.set_io_mode(fmwk.storage_manager.kBOTH)
+my_proc.set_io_mode(fmwk.storage_manager.kREAD)
 
 # Specify analysis output root file name
-my_proc.set_ana_output_file("ana.root");
+my_proc.set_ana_output_file("spallationcoverage.root");
 
 # Specify data output root file name
-my_proc.set_output_file(sys.argv[-1])
+my_proc.set_output_file("")
 
 # prepare the various hit removal stages
 
-algo = fmwk.SimpleClusterer()
+algo = fmwk.SpallationCoverage()
 algo.setHitProducer("gaushit")
-algo.setVtxProducer("numuCC_vertex")
-algo.setOutClusProducer("sc2")
+algo.setVtxProducer("")
+algo.setOutClusProducer("spallation")
 algo.setRadius(0.4)
-algo.setCellSize(2.0)
-algo.setUseVertex(True)
-algo.setVtxRadius(2.0)
+algo.setCellSize(20)
+algo.setUseVertex(False)
+algo.setVtxRadius(0.0)
 algo.setVerbose(False)
 algo.setROIRadius(100.)
 
 my_proc.add_process( algo )
-
-#my_proc.set_data_to_write(fmwk.data.kHit,         "gaushit" )
-my_proc.set_data_to_write(fmwk.data.kCluster,     "sc2"  )
-my_proc.set_data_to_write(fmwk.data.kAssociation, "sc2"  )
 
 print
 print  "Finished configuring ana_processor. Start event loop!"

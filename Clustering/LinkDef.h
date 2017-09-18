@@ -13,8 +13,10 @@
 #pragma link C++ class larlite::IsolatedClusterer+;
 #pragma link C++ class larlite::ProximityClusterer+;
 #pragma link C++ class larlite::PhotonClusterer+;
+#pragma link C++ class larlite::GammaPhotons+;
 #pragma link C++ class larlite::RemoveMuonHits+;
 #pragma link C++ class larlite::Spallation+;
+#pragma link C++ class larlite::SpallationCoverage+;
 //ADD_NEW_CLASS ... do not change this line
 #endif
 
