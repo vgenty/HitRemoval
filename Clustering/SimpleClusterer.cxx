@@ -175,12 +175,11 @@ namespace larlite {
 	    }// if the two hits are compatible
 	  }// 2nd loop through hits in the cell
 	  // has this hit been matched? if not we still need to add it as its own cluster
-	  /*
 	  if (matched == false){
 	    _clusterMap[hit1] = maxClusterID;
+	    _clusters[maxClusterID] = {hit1};
 	    maxClusterID += 1;
-	    }
-	  */
+	  }
 	}// 1st loop through hits in the cell
       }// loop through all cells
 
@@ -340,9 +339,9 @@ namespace larlite {
     //  if the hit time-ranges overlap, this distnce should be 0
     if (TimeOverlap(h1,h2,dt) == true)
       dt = 0;
-    double dw = ((double)h1.Channel()-(double)h2.Channel())*_wire2cm;
+    double dw = fabs(((double)h1.Channel()-(double)h2.Channel())*_wire2cm);
     if (dw >  0.3) dw -= 0.3;
-    if (dw < -0.3) dw  = 0.3;
+    //if (dw < -0.3) dw  = 0.3;
     double d = dt*dt + dw*dw;
 
     if (d > (_radius*_radius))
@@ -374,14 +373,14 @@ namespace larlite {
       }
       
       else {
-	
+
 	if ( (T1+W1) > (T2-W2) ) return true;
 	
 	d = (T2-W2) - (T1+W1);
 	if (d < dmin) dmin = d;
 
       }
-	
+
       return false;
     }
 
