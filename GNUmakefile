@@ -20,7 +20,7 @@ endif
 #
 # Define directories to be compile upon a global "make"...
 #
-SUBDIRS := Clustering CosmicRemoval NuTrackRemoval LinearityStudies Base #ADD_NEW_SUBDIR ... do not remove this comment from this line
+SUBDIRS := Base Clustering CosmicRemoval NuTrackRemoval LinearityStudies #ADD_NEW_SUBDIR ... do not remove this comment from this line
 
 
 #####################################################################################
